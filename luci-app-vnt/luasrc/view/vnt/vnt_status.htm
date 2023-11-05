@@ -1,0 +1,19 @@
+<script type="text/javascript">//<![CDATA[
+XHR.poll(3, '<%=url([[admin]], [[vpn]], [[vnt]], [[status]])%>', null,
+    function(x, data) {
+        var st = document.getElementById('vnt_status');
+        if (data && st) {
+               var clientStatus = data.crunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
+                var serverStatus = data.srunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
+                st.innerHTML = "<em><b>vnt-cli  " +  clientStatus  +  " &nbsp &nbsp &nbsp vnts " + serverStatus + "</b></em>";
+          
+        }
+    }
+);
+//]]>
+</script>
+<fieldset class="cbi-section">
+    <p id="vnt_status">
+        <em><%:Collecting data...%></em>
+    </p>
+</fieldset>
