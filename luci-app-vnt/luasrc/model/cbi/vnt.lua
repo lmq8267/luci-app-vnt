@@ -5,8 +5,6 @@ m = Map("vnt")
 m.title = translate("VNT")
 m.description = translate('vnt是一个简便高效的异地组网、内网穿透工具。项目地址：<a href="https://github.com/lbl8603/vnt">github.com/lbl8603/vnt</a>')
 
-
-
 -- vnt-cli
 m:section(SimpleSection).template  = "vnt/vnt_status"
 
@@ -16,15 +14,13 @@ s.anonymous = true
 s:tab("general", translate("基本设置"))
 s:tab("privacy", translate("高级设置"))
 
-
 switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
-
 
 token = s:taboption("general", Value, "token", translate("VPN名称"),
 	translate("一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网"))
 token.optional = false
-
+token.placeholder = "abc123"
 
 mode = s:taboption("general",ListValue, "mode", translate("接口模式"))
 mode:value("dhcp")
@@ -34,31 +30,40 @@ ipaddr = s:taboption("general",Value, "ipaddr", translate("接口IP地址"),
 	translate("每个vnt-cli客户端的接口IP不能相同"))
 ipaddr.optional = false
 ipaddr.datatype = "ip4addr"
+ipaddr.placeholder = "10.26.0.5"
 ipaddr:depends("mode", "static")
 
 desvice_id = s:taboption("general",Value, "desvice_id", translate("设备ID"),
 	translate("每台设备的唯一标识，注意不要重复，每个vnt-cli客户端的设备ID不能相同"))
+desvice_id.placeholder = "5"
 
+localadd = s:taboption("general",DynamicList, "localadd", translate("本地网段"),
+	translate("每个vnt-cli客户端的内网lan网段不能相同，例如本机lanIP为192.168.1.1则填 192.168.1.0/24 "))
+localadd.placeholder = "192.168.1.0/24"
 
-localadd = s:taboption("general",Value, "localadd", translate("本地网段"),
-	translate("每个vnt-cli客户端的内网lan网段不能相同，本地多个网段使用:分隔，如  192.168.1.0/24:192.168.2.0/24  "))
-
-peeradd = s:taboption("general",Value, "peeradd", translate("对端网段"),
-	translate("对端多个网段使用:分隔，如  192.168.1.0/24,10.26.0.2:192.168.2.0/24,10.26.0.3"))
+peeradd = s:taboption("general",DynamicList, "peeradd", translate("对端网段"),
+	translate("格式为对端的lanIP网段加英文，对端的接口IP，例如对端lanIP为192.168.2.1接口IP10.26.0.3则填192.168.2.0/24,10.26.0.3"))
+peeradd.placeholder = "192.168.2.0/24,10.26.0.3"
 
 forward = s:taboption("general",Flag, "forward", translate("启用IP转发"))
 forward.rmempty = false
 
+clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
+	translate("自定义vnt-cli的存放路径，确保填写完整的路径及名称"))
+clibin.placeholder = "/tmp/vnt-cli"
 
 vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地址"),
 	translate("相同的服务器，相同VPN名称的设备才会组成一个局域网"))
+vntshost.placeholder = "nat1.wherewego.top:29872"
 
 stunhost = s:taboption("privacy",Value, "stunhost", translate("stun服务器地址"),
 	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填"))
+stunhost.placeholder = "stun.qq.com:3478"
 stunhost.datatype = "ipaddrport"
 
-s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
+desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
 	translate("本机设备名称，方便区分不同设备"))
+desvice_name.placeholder = "openwrt"
 
 tunmode = s:taboption("privacy",ListValue, "tunmode", translate("TUN/TAP网卡"))
 tunmode:value("tun")
@@ -72,9 +77,11 @@ tcp:value("tcp")
 mtu = s:taboption("privacy",Value, "mtu", translate("MTU"),
 	translate("设置虚拟网卡的mtu值，大多数情况下（留空）使用默认值效率会更高，也可根据实际情况进行微调，默认值：不加密1450，加密1410"))
 mtu.datatype = "range(1,1500)"
+mtu.placeholder = "1438"
 
 par = s:taboption("privacy",Value, "par", translate("并行任务数"),
 	translate("默认留空，任务并行度(必须为正整数),默认值为1,该值表示处理网卡读写的任务数,组网设备数较多、处理延迟较大时可适当调大此值"))
+par.placeholder = "2"
 
 punch = s:taboption("privacy",ListValue, "punch", translate("IPV4/IPV6"),
 	translate("取值ipv4/ipv6，选择只使用ipv4打洞或者只使用ipv6打洞，默认两则都会使用,ipv6相对于ipv4速率会有所降低，ipv6更容易打通直连"))
@@ -92,6 +99,7 @@ passmode:value("aes_gcm")
 
 key = s:taboption("privacy",Value, "key", translate("加密密钥"),
 	translate("先开启上方的加密模式再填写密钥才能生效，使用相同密钥的客户端才能通信，服务端无法解密(包括中继转发数据)"))
+key.placeholder = "wodemima"
 
 client_port = s:taboption("privacy", Value, "client_port", translate("本地监听端口"),
 	translate("取值0~65535，指定本地监听的端口，留空默认随机端口"))
@@ -128,16 +136,22 @@ switch.rmempty = false
 server_port = s:option(Value, "server_port", translate("本地监听端口"))
 server_port.datatype = "port"
 server_port.optional = false
+server_port.placeholder = "2345"
 
-white_Token = s:option(Value, "white_Token", translate("VPN名称白名单"),
-	translate("填写后将只能指定的VPN名称才能连接，多个名称用:分隔，留空所有VPN名称都可以连接此服务端"))
 
+white_Token = s:option(DynamicList, "white_Token", translate("VPN名称白名单"),
+	translate("填写后将只能指定的VPN名称才能连接，留空则没有限制，所有VPN名称都可以连接此服务端"))
+white_Token.placeholder = "abc123"
 
 subnet = s:option(Value, "subnet", translate("指定DHCP网关"),
 	translate("分配给vnt-cli客户端的接口IP网段"))
 subnet.datatype = "ip4addr"
+subnet.placeholder = "10.10.10.1"
 
 servern_netmask = s:option(Value, "servern_netmask", translate("指定子网掩码"))
 
+vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
+	translate("自定义vnts的存放路径，确保填写完整的路径及名称"))
+vntsbin.placeholder = "/tmp/vnts"
 
 return m
