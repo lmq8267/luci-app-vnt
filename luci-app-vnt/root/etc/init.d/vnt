@@ -8,7 +8,7 @@ vntcli=/usr/bin/vnt-cli
 vnts=/usr/bin/vnts
 
 start_instance() {
-	local cfg="$1"
+         local cfg="$1"
 
 	local type
 	config_get type "$cfg" TYPE
@@ -18,8 +18,8 @@ start_instance() {
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
-		if [ ! -f "$vntcli" ] || [ $(($($vntcli -h | wc -l))) -gt 3 ] ; then
-		 logger 'vnt : 未找到程序 $vntcli 开始下载 '
+		if [ ! -f "$vntcli" ] ; then
+		 logger "vnt : 未找到程序 $vntcli 开始下载 "
 		 vntcli="/tmp/vnt-cli" 
 
 cputype=$(uname -ms | tr ' ' '_' | tr '[A-Z]' '[a-z]')
@@ -34,7 +34,9 @@ mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exi
 fi
 
 case "${cpucore}" in 
-	"mipsle") curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
+	"mipsle") 
+          curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
+ curl -L -k -o /tmp/vnt.tar.gz https://ghproxy.com/https://github.com/lbl8603/vnt/releases/download/1.2.7/vnt-cli-mipsel-unknown-linux-musl-1.2.7.tar.gz
 	;;
 	"mips")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mips
 	;;
@@ -50,7 +52,12 @@ case "${cpucore}" in
 	;;
 esac
  chmod +x "$vntcli"
- [ $(($($vntcli -h | wc -l))) -gt 3 ] && logger 'vnt : $vntcli 下载成功 '  || logger 'vnt : $vntcli 下载失败，请手动下载上传至/usr/bin/vnt-cli 程序已退出' && exit 1
+ if [ $(($($vntcli -h | wc -l))) -gt 3 ]; then
+ logger "vnt : ${vntcli} 下载成功"
+ else
+ logger "vnt : $vntcli 下载失败，请手动下载上传至/usr/bin/vnt-cli 程序已退出"
+ exit 1
+fi
                 fi
                 pgrep vnt-cli | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd 
@@ -145,7 +152,7 @@ esac
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
 		if [ $(($($vnts -h | wc -l))) -gt 3 ] || [ ! -f "$vnts" ] ; then
-		logger 'vnt : $vnts 下载失败，请手动下载上传至/usr/bin/vnts 程序已退出'
+		logger "vnt : ${vnts} 不存在，请手动下载上传至/usr/bin/vnts 程序已退出"
 		exit 1
 		fi
                 pgrep vnts | xargs kill -9 >/dev/null 2>&1
@@ -208,21 +215,21 @@ stop_instance() {
 }
 
 start_service() {
-        logger 'vnt : 开始启动'
+        logger "vnt : 开始启动"
 	config_load 'vnt'
 	config_foreach start_instance 'vnt-cli'
 	config_foreach start_instance 'vnts'
 }
 
 stop_service() {
-        logger 'vnt : 停止运行'
+        logger "vnt : 停止运行"
 	config_load 'vnt'
 	config_foreach stop_instance 'vnt-cli'
 	config_foreach stop_instance 'vnts'
 }
 
 reload_service() {
-       logger 'vnt : 重新启动'
+       logger "vnt : 重新启动"
 	stop
 	start
 }
