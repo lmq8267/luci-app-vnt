@@ -4,59 +4,66 @@
 
 START=99
 USE_PROCD=1
-vntcli=/usr/bin/vnt-cli
-vnts=/usr/bin/vnts
+
 
 start_instance() {
          local cfg="$1"
 
 	local type
 	config_get type "$cfg" TYPE
-
+        cputype=$(uname -ms | tr ' ' '_' | tr '[A-Z]' '[a-z]')
+        [ -n "$(echo $cputype | grep -E "linux.*armv.*")" ] && cpucore="arm"
+        [ -n "$(echo $cputype | grep -E "linux.*armv7.*")" ] && [ -n "$(cat /proc/cpuinfo | grep vfp)" ] && [ ! -d /jffs/clash ] && cpucore="armv7"
+        [ -n "$(echo $cputype | grep -E "linux.*aarch64.*|linux.*armv8.*")" ] && cpucore="aarch64"
+        [ -n "$(echo $cputype | grep -E "linux.*86.*")" ] && cpucore="i386"
+        [ -n "$(echo $cputype | grep -E "linux.*86_64.*")" ] && cpucore="x86_64"
+        if [ -n "$(echo $cputype | grep -E "linux.*mips.*")" ] ; then
+           mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
+           [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
+        fi
 	case "$type" in
 	vnt-cli)
 		local enabled
+                local clibin
+                config_get clibin "cfg" 'clibin'
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
-		if [ ! -f "$vntcli" ] ; then
-		 logger "vnt : 未找到程序 $vntcli 开始下载 "
-		 vntcli="/tmp/vnt-cli" 
-
-cputype=$(uname -ms | tr ' ' '_' | tr '[A-Z]' '[a-z]')
-[ -n "$(echo $cputype | grep -E "linux.*armv.*")" ] && cpucore="arm"
-[ -n "$(echo $cputype | grep -E "linux.*armv7.*")" ] && [ -n "$(cat /proc/cpuinfo | grep vfp)" ] && [ ! -d /jffs/clash ] && cpucore="armv7"
-[ -n "$(echo $cputype | grep -E "linux.*aarch64.*|linux.*armv8.*")" ] && cpucore="aarch64"
-[ -n "$(echo $cputype | grep -E "linux.*86.*")" ] && cpucore="i386"
-[ -n "$(echo $cputype | grep -E "linux.*86_64.*")" ] && cpucore="x86_64"
-if [ -n "$(echo $cputype | grep -E "linux.*mips.*")" ] ; then
-mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
-[ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
-fi
-
+		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
+		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
 case "${cpucore}" in 
-	"mipsle") curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
+	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
 	;;
-	"mips")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mips
+	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mips
 	;;
-	"x86_64")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_x86_64
+	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_x86_64
 	;;
-	"i386")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_i386
+	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_i386
 	;;
-	"arm")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_arm
+	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_arm
 	;;
-	"armv7")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_armv7
+	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_armv7
 	;;
-	"aarch64")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_aarch64
+	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_aarch64
 	;;
 esac
- chmod +x "$vntcli"
- if [ $(($($vntcli -h | wc -l))) -gt 3 ]; then
- logger "vnt : ${vntcli} 下载成功"
+ chmod +x "$clibin"
+ if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
+ logger "vnt : ${clibin} 下载成功"
+path=$(dirname "$clibin")
+if [ "${path:0:4}" = "/tmp" ] ;then 
+size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+if [ "$size" -gt 4 ] ; then
+cp -rf "$clibin" /usr/bin/vnt-cli
+sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt
+clibin=/usr/bin/vnt-cli
+fi
+fi
  else
- logger "vnt : $vntcli 下载失败，请手动下载上传至/usr/bin/vnt-cli 程序已退出"
+ logger "vnt : $clibin 下载失败，请手动下载上传程序,程序退出"
  exit 1
 fi
-                fi
+ fi
+ chmod +x "$clibin"
                 pgrep vnt-cli | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd 
 		local peeradd desvice_name vntshost stunhost 
@@ -87,7 +94,7 @@ fi
 		config_get_bool first_latency "$cfg" 'first_latency' '0'
                
 		procd_open_instance "vnt-cli"
-		procd_set_param command "$vntcli"
+		procd_set_param command "$clibin"
 		procd_append_param command -k "$token"
 		[ -z "$ipaddr" ] || procd_append_param command --ip "$ipaddr"
 		[ -z "$mtu" ] || procd_append_param command -u "$mtu"
@@ -149,10 +156,46 @@ fi
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
-		if [ $(($($vnts -h | wc -l))) -gt 3 ] || [ ! -f "$vnts" ] ; then
-		logger "vnt : ${vnts} 不存在，请手动下载上传至/usr/bin/vnts 程序已退出"
-		exit 1
-		fi
+                config_get vntsbin "$cfg" 'vntsbin'
+		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
+		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
+		case "${cpucore}" in 
+	        "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
+	        ;;
+	        "mips")  logger "vnt : 官方暂未发布mips版本，请联系群里，程序退出" 
+                         exit 1
+	        ;;
+	        "x86_64")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
+	        ;;
+	        "i386")  logger "vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出"
+                exit 1
+	        ;;
+	        "arm")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
+	        ;;
+	        "armv7")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-armv7-unknown-linux-gnueabihf-1.2.4.tar.gz
+	        ;;
+	        "aarch64")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-aarch64-unknown-linux-gnu-1.2.4.tar.gz
+	        ;;
+                esac
+                tar zxf /tmp/vnts.tar.gz -C /tmp/
+                chmod +x /tmp/vnts
+                if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
+                   logger "vnt : /tmp/vnts 下载成功"
+                   path=$(dirname "$vntsbin")
+                   if [ "${path:0:4}" = "/tmp" ] ;then 
+                     size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+                     if [ "$size" -gt 4 ] ; then
+                         cp -rf /tmp/vnts /usr/bin/vnts
+                         sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt
+                         vntsbin=/usr/bin/vnts
+                     fi
+                   fi
+               else
+                  logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
+                  exit 1
+               fi
+               fi
+               chmod +x "$vntsbin"
                 pgrep vnts | xargs kill -9 >/dev/null 2>&1
 		local server_port white_Token subnet servern_netmask
 		config_get server_port "$cfg" 'server_port'
@@ -161,7 +204,7 @@ fi
 		config_get servern_netmask "$cfg" 'servern_netmask'
 
 		procd_open_instance "vnts"
-		procd_set_param command "$vnts"
+		procd_set_param command "$vntsbin"
 		procd_append_param command --port "$server_port"
 		if [ ! -z "$white_Token" ] ; then
                 
