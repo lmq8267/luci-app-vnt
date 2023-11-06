@@ -225,7 +225,7 @@ esac
                      procd_append_param command --white-token "$white_Tokenr"
                    else
                    for white_Tokens in $(cat /etc/config/vnt | grep 'list white_Token'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
-                   procd_append_param command -o "$white_Tokens"
+                   procd_append_param command --white-token "$white_Tokens"
                    done
                    fi
                 fi
