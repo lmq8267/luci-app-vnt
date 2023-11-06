@@ -34,9 +34,7 @@ mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exi
 fi
 
 case "${cpucore}" in 
-	"mipsle") 
-          curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
- curl -L -k -o /tmp/vnt.tar.gz https://ghproxy.com/https://github.com/lbl8603/vnt/releases/download/1.2.7/vnt-cli-mipsel-unknown-linux-musl-1.2.7.tar.gz
+	"mipsle") curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
 	;;
 	"mips")  curl -o "${vntcli}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mips
 	;;
