@@ -28,7 +28,7 @@ start_instance() {
 		[ "$enabled" = "1" ] || return 1
                 config_get clibin "$cfg" 'clibin'
                 if [ -z "$clibin" ] ;then
-                   clibin=/tmp/bin/vnt-cli
+                   clibin=/tmp/vnt-cli
                 fi
                 if [ "$clibin" = "/usr/bin/vnt-cli" ] || [ -f /usr/bin/vnt-cli ] ; then
                    sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt 
@@ -113,26 +113,22 @@ esac
 		[ -z "$client_port" ] || procd_append_param command --port "$client_port"
 		[ -z "$key" ] || procd_append_param command -w "$key"
 		if [ ! -z "$peeradd" ] ; then
-
-                  if [[ $peeradd == *":"* ]]; then
-                   peeradds=$(echo "$peeradd" | sed 's/:/\n/g')
-                    for peeraddr in $peeradds; do
+                  if [[ "$(grep "list peeradd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                    procd_append_param command -i "$peeradd"
+                  else
+                    for peeraddr in $(cat /etc/config/vnt | grep 'list peeradd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
                     procd_append_param command -i "$peeraddr"
                    done
-                   else
-                   procd_append_param command -i "$peeradd"
                    fi
                 fi
 
                 if [ ! -z "$localadd" ] ; then
-                
-                  if [[ $localadd == *":"* ]]; then
-                   localadds=$(echo "$localadd" | sed 's/:/\n/g')
-                     for localaddr in $localadds; do
-                    procd_append_param command -o "$localaddr"
-                     done
-                   else
-                   procd_append_param command -o "$localadd"
+                  if [[ "$(grep "list localadd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                     procd_append_param command -o "$localadd"
+                 else
+                   for localaddr in $(cat /etc/config/vnt | grep 'list localadd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                   procd_append_param command -o "$localaddr"
+                   done
                    fi
                 fi
 		[ -z "$par" ] || procd_append_param command --par "$par"
@@ -166,7 +162,7 @@ esac
 		[ "$enabled" = "1" ] || return 1
                 config_get vntsbin "$cfg" 'vntsbin'
                 if [ -z "$vntsbin" ] ;then
-                   vntsbin=/tmp/bin/vnts
+                   vntsbin=/tmp/vnts
                 fi
                 if [ "$vntsbin" = "/usr/bin/vnts" ] || [ -f /usr/bin/vnts ] ; then
                    sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt 
@@ -223,15 +219,14 @@ esac
 		procd_open_instance "vnts"
 		procd_set_param command "$vntsbin"
 		procd_append_param command --port "$server_port"
+
 		if [ ! -z "$white_Token" ] ; then
-                
-                  if [[ $white_Token == *":"* ]]; then
-                   white_Tokens=$(echo "$white_Token" | sed 's/:/\n/g')
-                     for white_Tokenr in $white_Tokens; do
-                    procd_append_param command --white-token "$white_Tokenr"
-                     done
+                   if [[ "$(grep "list white_Token" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                     procd_append_param command --white-token "$white_Tokenr"
                    else
-                   procd_append_param command --white-token "$white_Tokenr"
+                   for white_Tokens in $(cat /etc/config/vnt | grep 'list white_Token'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                   procd_append_param command -o "$white_Tokens"
+                   done
                    fi
                 fi
 		[ -z "$subnet" ] || procd_append_param command --gateway "$subnet"
