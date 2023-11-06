@@ -24,10 +24,9 @@ start_instance() {
 	case "$type" in
 	vnt-cli)
 		local enabled
-                local clibin
-                config_get clibin "cfg" 'clibin'
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
+                config_get clibin "$cfg" 'clibin'
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
 		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
 case "${cpucore}" in 
@@ -46,24 +45,25 @@ case "${cpucore}" in
 	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_aarch64
 	;;
 esac
+
  chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
- logger "vnt : ${clibin} 下载成功"
-path=$(dirname "$clibin")
-if [ "${path:0:4}" = "/tmp" ] ;then 
-size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-if [ "$size" -gt 4 ] ; then
-cp -rf "$clibin" /usr/bin/vnt-cli
-sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt
-clibin=/usr/bin/vnt-cli
-fi
-fi
+    logger "vnt : ${clibin} 下载成功"
+    path=$(dirname "$clibin")
+    if [ "${path:0:4}" = "/tmp" ] ;then 
+       size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+         if [ "$size" -gt 4 ] ; then
+            cp -rf  "$clibin" /usr/bin/vnt-cli
+            sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt
+            clibin=/usr/bin/vnt-cli
+          fi
+    fi
  else
  logger "vnt : $clibin 下载失败，请手动下载上传程序,程序退出"
  exit 1
-fi
  fi
- chmod +x "$clibin"
+                fi
+                chmod +x "$clibin"
                 pgrep vnt-cli | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd 
 		local peeradd desvice_name vntshost stunhost 
@@ -160,42 +160,43 @@ fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
 		case "${cpucore}" in 
-	        "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
-	        ;;
-	        "mips")  logger "vnt : 官方暂未发布mips版本，请联系群里，程序退出" 
-                         exit 1
-	        ;;
-	        "x86_64")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
-	        ;;
-	        "i386")  logger "vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出"
-                exit 1
-	        ;;
-	        "arm")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
-	        ;;
-	        "armv7")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-armv7-unknown-linux-gnueabihf-1.2.4.tar.gz
-	        ;;
-	        "aarch64")  curl -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-aarch64-unknown-linux-gnu-1.2.4.tar.gz
-	        ;;
-                esac
-                tar zxf /tmp/vnts.tar.gz -C /tmp/
-                chmod +x /tmp/vnts
-                if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
-                   logger "vnt : /tmp/vnts 下载成功"
-                   path=$(dirname "$vntsbin")
-                   if [ "${path:0:4}" = "/tmp" ] ;then 
-                     size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-                     if [ "$size" -gt 4 ] ; then
-                         cp -rf /tmp/vnts /usr/bin/vnts
-                         sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt
-                         vntsbin=/usr/bin/vnts
-                     fi
-                   fi
-               else
-                  logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
-                  exit 1
-               fi
-               fi
+	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
+	           ;;
+	           "mips")  logger "vnt : 官方暂未发布mips版本，请联系群里，程序退出" 
+                   exit 1
+	           ;;
+	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
+	           ;;
+	           "i386")  logger "vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出"
+                   exit 1
+	           ;;
+	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
+	           ;;
+	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-armv7-unknown-linux-gnueabihf-1.2.4.tar.gz
+	           ;;
+	           "aarch64")  curl -L -k -o/tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-aarch64-unknown-linux-gnu-1.2.4.tar.gz
+	           ;;
+                   esac
+                   tar zxf /tmp/vnts.tar.gz -C /tmp/
+                   chmod +x /tmp/vnts
+ if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
+    logger "vnt : /tmp/vnts 下载成功"
+    path=$(dirname "$vntsbin")
+    if [ "${path:0:4}" = "/tmp" ] ;then 
+       size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+       if [ "$size" -gt 4 ] ; then
+       cp -rf /tmp/vnts /usr/bin/vnts
+       sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt
+       vntsbin=/usr/bin/vnts
+       fi
+    fi
+ else
+ logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
+ exit 1
+ fi
+                fi
                chmod +x "$vntsbin"
+		
                 pgrep vnts | xargs kill -9 >/dev/null 2>&1
 		local server_port white_Token subnet servern_netmask
 		config_get server_port "$cfg" 'server_port'
@@ -228,6 +229,7 @@ fi
 		procd_close_instance
 
 		iptables -I INPUT -p udp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
+                iptables -I INPUT -p tcp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
 	;;
 	esac
 }
@@ -251,6 +253,8 @@ stop_instance() {
 		config_get server_port "$cfg" 'server_port'
                 pgrep vnts | xargs kill -9 >/dev/null 2>&1
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
+                iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
+
 	;;
 	esac
 }
