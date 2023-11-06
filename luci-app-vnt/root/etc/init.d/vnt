@@ -29,6 +29,8 @@ start_instance() {
                 config_get clibin "$cfg" 'clibin'
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
 		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
+                 path=$(dirname "$clibin")
+                 mkdir -p "$path"
 case "${cpucore}" in 
 	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
 	;;
@@ -49,8 +51,6 @@ esac
  chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
     logger "vnt : ${clibin} 下载成功"
-    path=$(dirname "$clibin")
-    mkdir -p "$path"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
          if [ "$size" -gt 4 ] ; then
@@ -160,6 +160,8 @@ esac
                 config_get vntsbin "$cfg" 'vntsbin'
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
+                path=$(dirname "$vntsbin")
+                mkdir -p "$path"
 		case "${cpucore}" in 
 	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
 	           ;;
@@ -182,8 +184,6 @@ esac
                    chmod +x /tmp/vnts
  if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
     logger "vnt : /tmp/vnts 下载成功"
-    path=$(dirname "$vntsbin")
-    mkdir -p "$path"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
        if [ "$size" -gt 4 ] ; then
