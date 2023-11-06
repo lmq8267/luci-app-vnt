@@ -149,6 +149,7 @@ subnet.datatype = "ip4addr"
 subnet.placeholder = "10.10.10.1"
 
 servern_netmask = s:option(Value, "servern_netmask", translate("指定子网掩码"))
+servern_netmask.placeholder = "225.225.225.0"
 
 vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
 	translate("自定义vnts的存放路径，确保填写完整的路径及名称"))
