@@ -50,6 +50,7 @@ esac
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
     logger "vnt : ${clibin} 下载成功"
     path=$(dirname "$clibin")
+    mkdir -p "$path"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
          if [ "$size" -gt 4 ] ; then
@@ -182,6 +183,7 @@ esac
  if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
     logger "vnt : /tmp/vnts 下载成功"
     path=$(dirname "$vntsbin")
+    mkdir -p "$path"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
        if [ "$size" -gt 4 ] ; then
