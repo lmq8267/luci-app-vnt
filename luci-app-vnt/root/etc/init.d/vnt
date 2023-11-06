@@ -27,6 +27,10 @@ start_instance() {
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
                 config_get clibin "$cfg" 'clibin'
+                if [ "$clibin" = "/usr/bin/vnt-cli" ] || [ -f /usr/bin/vnt-cli ] ; then
+                   sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt 
+                   clibin=/usr/bin/vnt-cli
+                fi
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
 		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
                  path=$(dirname "$clibin")
@@ -158,6 +162,10 @@ esac
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
                 config_get vntsbin "$cfg" 'vntsbin'
+                if [ "$vntsbin" = "/usr/bin/vnts" ] || [ -f /usr/bin/vnts ] ; then
+                   sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt 
+                   vntsbin=/usr/bin/vnts
+                fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
                 path=$(dirname "$vntsbin")
