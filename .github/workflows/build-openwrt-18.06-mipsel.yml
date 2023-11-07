@@ -1,0 +1,35 @@
+name: mipsel-openwrt-18.06
+
+on:
+  workflow_dispatch:
+jobs:
+
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: 设置编译环境
+        shell: bash
+        run: |
+          sudo apt-get install libncurses5-dev
+          sudo apt-get install python2
+          sudo apt-get install gcc
+          sudo timedatectl set-timezone "$TZ"
+          #下载编译工具链
+          wget -q -c https://archive.openwrt.org/releases/18.06.9/targets/ramips/mt7621/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -P /opt/gcc/
+          tar -xJf /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -C /opt/gcc/
+          git clone https://github.com/lmq8267/luci-app-vnt.git /opt/vnt
+          cp -R /opt/vnt/luci-app-vnt /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64/package/luci-app-vnt
+      - name: 编译
+        shell: bash
+        run: |
+          cd /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64
+          ./scripts/feeds update -a
+          make defconfig
+          make package/luci-app-vnt/compile V=s -j1
+      - name : 上传
+        uses: actions/upload-artifact@master
+        if: always()
+        with:
+         name: mipsel-openwrt-18.06
+         path: /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64/bin/packages/mipsel_24kc/base/*
