@@ -1,6 +1,5 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2008-2020 OpenWrt.org
-# Copyright (C) 2022 ImmortalWrt.org
 
 START=99
 USE_PROCD=1
@@ -210,11 +209,12 @@ esac
                chmod +x "$vntsbin"
 		
                 pgrep vnts | xargs kill -9 >/dev/null 2>&1
-		local server_port white_Token subnet servern_netmask
+		local server_port white_Token subnet servern_netmask logs
 		config_get server_port "$cfg" 'server_port'
 		config_get white_Token "$cfg" 'white_Token'
 		config_get subnet "$cfg" 'subnet'
 		config_get servern_netmask "$cfg" 'servern_netmask'
+                config_get_bool logs "$cfg" 'logs' '0'
 
 		procd_open_instance "vnts"
 		procd_set_param command "$vntsbin"
@@ -241,6 +241,7 @@ esac
 
 		iptables -I INPUT -p udp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
                 iptables -I INPUT -p tcp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
+                [ "$logs" = "0" ] && rm -rf "$(dirname "$(find /root -name 'log4rs.yaml')")"
 	;;
 	esac
 }
