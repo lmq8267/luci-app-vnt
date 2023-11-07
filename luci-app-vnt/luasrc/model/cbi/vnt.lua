@@ -1,5 +1,6 @@
-
-local fs = require "nixio.fs"
+local fs = require "luci.fs"
+local http = luci.http
+local nixio = require "nixio"
 
 m = Map("vnt")
 m.title = translate("VNT")
@@ -13,6 +14,7 @@ s.anonymous = true
 
 s:tab("general", translate("基本设置"))
 s:tab("privacy", translate("高级设置"))
+s:tab("upload", translate("上传程序"))
 
 switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
@@ -49,7 +51,7 @@ forward = s:taboption("general",Flag, "forward", translate("启用IP转发"))
 forward.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
-	translate("自定义vnt-cli的存放路径，确保填写完整的路径及名称"))
+	translate("自定义vnt-cli的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnt-cli"))
 clibin.placeholder = "/tmp/vnt-cli"
 
 vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地址"),
@@ -124,6 +126,56 @@ multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组�
 	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
 multicast.rmempty = false
 
+local upload = s:taboption("upload", FileUpload, "upload_file")
+upload.optional = true
+upload.default = ""
+upload.template = "filetransfer/other_upload"
+upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包")
+local um = s:taboption("upload",DummyValue, "", nil)
+um.template = "filetransfer/other_dvalue"
+
+local dir, fd, chunk
+dir = "/tmp/"
+nixio.fs.mkdir(dir)
+http.setfilehandler(
+    function(meta, chunk, eof)
+        if not fd then
+            if not meta then return end
+
+            if meta and chunk then fd = nixio.open(dir .. meta.file, "w") end
+
+            if not fd then
+                um.value = translate("错误：上传失败！")
+                return
+            end
+        end
+        if chunk and fd then
+            fd:write(chunk)
+        end
+        if eof and fd then
+            fd:close()
+            fd = nil
+            um.value = translate("文件已上传至") .. ' "/tmp/' .. meta.file .. '"'
+
+            if string.sub(meta.file, -7) == ".tar.gz" then
+                local file_path = dir .. meta.file
+                os.execute("tar -xzf " .. file_path .. " -C " .. dir)
+               if nixio.fs.access("/tmp/vnt-cli") then
+                    um.value = um.value .. "\n" .. translate("程序/tmp/vnt-cli上传成功")
+                end
+               if nixio.fs.access("/tmp/vnts") then
+                    um.value = um.value .. "\n" .. translate("程序/tmp/vnts上传成功")
+                end
+               end
+                os.execute("chmod 777 /tmp/vnts")
+                os.execute("chmod 777 /tmp/vnt-cli")                
+        end
+    end
+)
+if luci.http.formvalue("upload") then
+    local f = luci.http.formvalue("ulfile")
+end
+
 -- vnts
 s = m:section(TypedSection, "vnts", translate("vnts服务器设置"))
 s.anonymous = true
@@ -151,7 +203,7 @@ servern_netmask = s:option(Value, "servern_netmask", translate("指定子网掩�
 servern_netmask.placeholder = "225.225.225.0"
 
 vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
-	translate("自定义vnts的存放路径，确保填写完整的路径及名称"))
+	translate("自定义vnts的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnts"))
 vntsbin.placeholder = "/tmp/vnts"
 
 logs = s:option(Flag, "logs", translate("启用日志"),
