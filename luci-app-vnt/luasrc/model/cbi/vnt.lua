@@ -155,4 +155,8 @@ vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
 	translate("自定义vnts的存放路径，确保填写完整的路径及名称"))
 vntsbin.placeholder = "/tmp/vnts"
 
+logs = s:option(Flag, "logs", translate("启用日志"),
+	translate("在vnts启动后会生成运行日志在/root/log目录里，一些密钥信息及连接信息，最高会多达数M，默认不生成日志）"))
+logs.rmempty = false
+
 return m
