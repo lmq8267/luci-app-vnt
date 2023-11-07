@@ -14,7 +14,7 @@ jobs:
           sudo apt-get install libncurses5-dev
           sudo apt-get install python2
           sudo apt-get install gcc
-          sudo timedatectl set-timezone "$TZ"
+          sudo timedatectl set-timezone Asia/Shanghai
           #下载编译工具链
           wget -q -c https://archive.openwrt.org/releases/18.06.9/targets/ramips/mt7621/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -P /opt/gcc/
           tar -xJf /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -C /opt/gcc/
