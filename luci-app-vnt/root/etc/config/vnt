@@ -31,3 +31,4 @@ config vnts
 	option servern_netmask '255.255.255.0'
 	option white_Token ''
         option vntsbin '/tmp/vnts'
+        option logs '0'
