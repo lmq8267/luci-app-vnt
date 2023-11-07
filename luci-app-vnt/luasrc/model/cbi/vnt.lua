@@ -59,7 +59,6 @@ vntshost.placeholder = "nat1.wherewego.top:29872"
 stunhost = s:taboption("privacy",Value, "stunhost", translate("stun服务器地址"),
 	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填"))
 stunhost.placeholder = "stun.qq.com:3478"
-stunhost.datatype = "ipaddrport"
 
 desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
 	translate("本机设备名称，方便区分不同设备"))
