@@ -59,7 +59,7 @@ esac
     logger "vnt : ${clibin} 下载成功"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-         if [ "$size" -gt 4 ] ; then
+         if [ "$size" -gt 4000 ] ; then
             cp -rf  "$clibin" /usr/bin/vnt-cli
             sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt
             clibin=/usr/bin/vnt-cli
@@ -195,7 +195,7 @@ esac
     logger "vnt : /tmp/vnts 下载成功"
     if [ "${path:0:4}" = "/tmp" ] ;then 
        size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-       if [ "$size" -gt 4 ] ; then
+       if [ "$size" -gt 4000 ] ; then
        cp -rf /tmp/vnts /usr/bin/vnts
        sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt
        vntsbin=/usr/bin/vnts
