@@ -11,7 +11,7 @@ jobs:
         name: 下载工具链
         shell: bash
         run: |
-          sudo timedatectl set-timezone "$TZ"
+          sudo timedatectl set-timezone Asia/Shanghai
           #下载编译工具链
           wget -q -c https://downloads.openwrt.org/releases/23.05.0/targets/ramips/mt7621/openwrt-sdk-23.05.0-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -P /opt/gcc/
           tar -xJf /opt/gcc/openwrt-sdk-23.05.0-ramips-mt7621_gcc-12.3.0_musl.Linux-x86_64.tar.xz -C /opt/gcc/
