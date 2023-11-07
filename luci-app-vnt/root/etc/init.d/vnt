@@ -29,13 +29,26 @@ start_instance() {
                 if [ -z "$clibin" ] ;then
                    clibin=/tmp/vnt-cli
                 fi
-                if [ "$clibin" = "/usr/bin/vnt-cli" ] || [ -f /usr/bin/vnt-cli ] ; then
-                   sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt 
-                   clibin=/usr/bin/vnt-cli
+                size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+                path=$(dirname "$clibin")
+                if [ -f /tmp/vnt-cli ] && [ "$path" != "/tmp" ] ;then
+                   chmod +x /tmp/vnt-cli
+                   logger "vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin "
+                   upsize="$(du -k /tmp/vnt-cli | cut -f1)"
+                   result=$(expr $size - $upsize)
+                   if [ $(($(/tmp/vnt-cli -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
+                     mv -f /tmp/vnt-cli "$clibin"
+                     else
+                     logger "vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb"
+                   fi
+                fi
+                if [ ! -f "$clibin" ] && [ "$size" -lt 4000 ] ; then
+                    logger "vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnt-cli"
+                    sed -i "/clibin/c option clibin '/tmp/vnt-cli' " /etc/config/vnt 
+                    clibin=/tmp/vnt-cli
                 fi
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
 		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
-                 path=$(dirname "$clibin")
                  mkdir -p "$path"
 case "${cpucore}" in 
 	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
@@ -53,25 +66,17 @@ case "${cpucore}" in
 	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_aarch64
 	;;
 esac
-
  chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
     logger "vnt : ${clibin} 下载成功"
-    if [ "${path:0:4}" = "/tmp" ] ;then 
-       size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-         if [ "$size" -gt 4000 ] ; then
-            cp -rf  "$clibin" /usr/bin/vnt-cli
-            sed -i "/clibin/c option clibin '/usr/bin/vnt-cli' " /etc/config/vnt
-            clibin=/usr/bin/vnt-cli
-          fi
-    fi
  else
- logger "vnt : $clibin 下载失败，请手动下载上传程序,程序退出"
- exit 1
+    logger "vnt : $clibin 下载失败，请手动下载上传程序,程序退出"
+    exit 1
  fi
                 fi
                 chmod +x "$clibin"
-                pgrep vnt-cli | xargs kill -9 >/dev/null 2>&1
+                ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
+                ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd 
 		local peeradd desvice_name vntshost stunhost 
 		local punch client_port par key forward serverw 
@@ -163,13 +168,30 @@ esac
                 if [ -z "$vntsbin" ] ;then
                    vntsbin=/tmp/vnts
                 fi
+                size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+                path=$(dirname "$vntsbin")
+                if [ -f /tmp/vnts ] && [ "$path" != "/tmp" ] ;then
+                   chmod +x /tmp/vnts
+                   logger "vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin "
+                   upsize="$(du -k /tmp/vnts | cut -f1)"
+                   result=$(expr $size - $upsize)
+                   if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
+                     mv -f /tmp/vnts "$vntsbin"
+                     else
+                     logger "vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb"
+                   fi
+                fi
+                if [ ! -f "$vntsbin" ] && [ "$size" -lt 4000 ] ; then
+                    logger "vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts"
+                    sed -i "/vntsbin/c option vntsbin '/tmp/vnts' " /etc/config/vnt 
+                    vntsbin=/tmp/vnts
+                fi
                 if [ "$vntsbin" = "/usr/bin/vnts" ] || [ -f /usr/bin/vnts ] ; then
                    sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt 
                    vntsbin=/usr/bin/vnts
                 fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
-                path=$(dirname "$vntsbin")
                 mkdir -p "$path"
 		case "${cpucore}" in 
 	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
@@ -191,24 +213,17 @@ esac
                    esac
                    tar zxf /tmp/vnts.tar.gz -C /tmp/
                    chmod +x /tmp/vnts
- if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
-    logger "vnt : /tmp/vnts 下载成功"
-    if [ "${path:0:4}" = "/tmp" ] ;then 
-       size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
-       if [ "$size" -gt 4000 ] ; then
-       cp -rf /tmp/vnts /usr/bin/vnts
-       sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt
-       vntsbin=/usr/bin/vnts
-       fi
-    fi
- else
- logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
- exit 1
- fi
+                  if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
+                    logger "vnt : /tmp/vnts 下载成功"
+                    mv -f /tmp/vnts "$vntsbin"
+                 else
+                     logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
+                     exit 1
+                  fi
                 fi
                chmod +x "$vntsbin"
-		
-                pgrep vnts | xargs kill -9 >/dev/null 2>&1
+                ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
+                ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local server_port white_Token subnet servern_netmask logs
 		config_get server_port "$cfg" 'server_port'
 		config_get white_Token "$cfg" 'white_Token'
@@ -254,8 +269,8 @@ stop_instance() {
 
 	case "$type" in
 	vnt-cli)
-
-		pgrep vnt-cli | xargs kill -9 >/dev/null 2>&1
+                ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
+                ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D FORWARD -o vnt-tun -j ACCEPT 2>"/dev/null"
                 iptables -D FORWARD -i vnt-tun -j ACCEPT 2>"/dev/null"
                 iptables -D INPUT -i vnt-tun -j ACCEPT 2>"/dev/null"
@@ -263,7 +278,8 @@ stop_instance() {
 	vnts)
 		local server_port
 		config_get server_port "$cfg" 'server_port'
-                pgrep vnts | xargs kill -9 >/dev/null 2>&1
+                ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
+                ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
 
