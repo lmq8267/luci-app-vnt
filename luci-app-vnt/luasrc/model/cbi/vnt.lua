@@ -129,10 +129,10 @@ multicast.rmempty = false
 local upload = s:taboption("upload", FileUpload, "upload_file")
 upload.optional = true
 upload.default = ""
-upload.template = "filetransfer/other_upload"
+upload.template = "vnt/other_upload"
 upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包,可以上传新版本会自动覆盖旧版本")
 local um = s:taboption("upload",DummyValue, "", nil)
-um.template = "filetransfer/other_dvalue"
+um.template = "vnt/other_dvalue"
 
 local dir, fd, chunk
 dir = "/tmp/"
