@@ -10,7 +10,7 @@ PKG_VERSION:=1.0.0
 PKG_RELEASE:=1
 
 LUCI_TITLE:=vnt VPN Configuration module
-LUCI_DEPENDS:=+kmod-tun +luci-lib-fs
+LUCI_DEPENDS:=
 LUCI_PKGARCH:=all
 
 PKG_NAME:=luci-app-vnt
