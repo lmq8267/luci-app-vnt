@@ -1,35 +1,76 @@
-name: mipsel-openwrt-18.06
+name: ramips-mt7621-mipsel
 
 on:
   workflow_dispatch:
-jobs:
 
-  build:
-    runs-on: ubuntu-20.04
+jobs:
+ build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TAG: 23.05.0
+            GCC: 12.3.0
+            OS: ubuntu-latest
+          - TAG: 22.03.5
+            GCC: 11.2.0
+            OS: ubuntu-latest
+          - TAG: snapshots
+            GCC: 12.3.0
+            OS: ubuntu-latest
+          - TAG: 21.02.7
+            GCC: 8.4.0
+            OS: ubuntu-latest
+          - TAG: 19.07.10
+            GCC: 7.5.0
+            OS: ubuntu-latest
+          - TAG: 18.06.9
+            GCC: 7.3.0
+            OS: ubuntu-20.04
+    runs-on: ${{ matrix.OS }}
+    env:
+      TAG: ${{ matrix.TAG }}
+      OS: ${{ matrix.OS }}
+      GCC: ${{ matrix.GCC }}
     steps:
       - uses: actions/checkout@v3
-      - name: 设置编译环境
-        shell: bash
+      - name: 下载工具链
         run: |
-          sudo apt-get install libncurses5-dev
-          sudo apt-get install python2
-          sudo apt-get install gcc
           sudo timedatectl set-timezone Asia/Shanghai
-          #下载编译工具链
-          wget -q -c https://archive.openwrt.org/releases/18.06.9/targets/ramips/mt7621/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -P /opt/gcc/
-          tar -xJf /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64.tar.xz -C /opt/gcc/
+          if [[ $TAG == 18.06.9 ]] || [[ $TAG == 19.07.10 ]] ; then
+          sudo apt-get install libncurses5-dev python2 gcc
+          fi
+          if [[ $TAG == snapshots ]] ; then
+          wget -qO /opt/sdk.tar.xz https://downloads.openwrt.org/snapshots/targets/ramips/mt7621/openwrt-sdk-ramips-mt7621_gcc-${GCC}_musl.Linux-x86_64.tar.xz
+          else
+          wget -qO /opt/sdk.tar.xz https://archive.openwrt.org/releases/${TAG}/targets/ramips/mt7621/openwrt-sdk-${TAG}-ramips-mt7621_gcc-${GCC}_musl.Linux-x86_64.tar.xz
+          fi
+          tar -xJf /opt/sdk.tar.xz -C /opt
           git clone https://github.com/lmq8267/luci-app-vnt.git /opt/vnt
-          cp -R /opt/vnt/luci-app-vnt /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64/package/luci-app-vnt
-      - name: 编译
-        shell: bash
-        run: |
-          cd /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64
+          cd /opt/openwrt-sdk*/package
+          cp -R /opt/vnt/luci-app-vnt .
+          cd /opt/openwrt-sdk*
           ./scripts/feeds update -a
           make defconfig
+      - name: 开始编译
+        run: |
+          cd /opt/openwrt-sdk*
           make package/luci-app-vnt/compile V=s -j1
-      - name : 上传
-        uses: actions/upload-artifact@master
-        if: always()
+          cd /opt/openwrt-sdk*/bin/packages/mipsel_24kc/base
+          ls
+          mv *.ipk luci-app-vnt-${TAG}_all.ipk
+          echo "build_time=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+      - name: 发布
+        uses: softprops/action-gh-release@v1
         with:
-         name: mipsel-openwrt-18.06
-         path: /opt/gcc/openwrt-sdk-18.06.9-ramips-mt7621_gcc-7.3.0_musl.Linux-x86_64/bin/packages/mipsel_24kc/base/*
+            token: ${{ secrets.c8 }}
+            body: |
+             > ### 编译时间 ：${{ env.build_time }}
+
+             luci-app-vnt-（这是openwrt版本）_all.ipk
+             
+             对应的[openwrt版本列表](https://downloads.openwrt.org/)
+           
+            tag_name: ramips-mt7621-mipsel
+            files: /opt/openwrt-sdk*/bin/packages/mipsel_24kc/base/*
+     
