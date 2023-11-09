@@ -31,7 +31,7 @@ start_instance() {
                 fi
                 size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
                 path=$(dirname "$clibin")
-                if [ -f /tmp/vnt-cli ] && [ "$path" != "/tmp" ] ;then
+                if [ -f /tmp/vnt-cli ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnt-cli
                    logger "vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin "
                    upsize="$(du -k /tmp/vnt-cli | cut -f1)"
@@ -170,7 +170,7 @@ esac
                 fi
                 size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
                 path=$(dirname "$vntsbin")
-                if [ -f /tmp/vnts ] && [ "$path" != "/tmp" ] ;then
+                if [ -f /tmp/vnts ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnts
                    logger "vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin "
                    upsize="$(du -k /tmp/vnts | cut -f1)"
@@ -185,10 +185,6 @@ esac
                     logger "vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts"
                     sed -i "/vntsbin/c option vntsbin '/tmp/vnts' " /etc/config/vnt 
                     vntsbin=/tmp/vnts
-                fi
-                if [ "$vntsbin" = "/usr/bin/vnts" ] || [ -f /usr/bin/vnts ] ; then
-                   sed -i "/vntsbin/c option vntsbin '/usr/bin/vnts' " /etc/config/vnt 
-                   vntsbin=/usr/bin/vnts
                 fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
@@ -213,6 +209,7 @@ esac
                    esac
                    tar zxf /tmp/vnts.tar.gz -C /tmp/
                    chmod +x /tmp/vnts
+                   rm -rf /tmp/vnts.tar.gz
                   if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
                     logger "vnt : /tmp/vnts 下载成功"
                     mv -f /tmp/vnts "$vntsbin"
