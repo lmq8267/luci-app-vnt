@@ -1,0 +1,72 @@
+name: ath79-generic-mips_24kc
+
+on:
+  workflow_dispatch:
+
+jobs:
+ build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TAG: 23.05.0
+            GCC: 12.3.0
+            OS: ubuntu-latest
+          - TAG: 22.03.5
+            GCC: 11.2.0
+            OS: ubuntu-latest
+          - TAG: snapshots
+            GCC: 12.3.0
+            OS: ubuntu-latest
+          - TAG: 21.02.7
+            GCC: 8.4.0
+            OS: ubuntu-latest
+          - TAG: 19.07.10
+            GCC: 7.5.0
+            OS: ubuntu-latest
+    runs-on: ${{ matrix.OS }}
+    env:
+      TAG: ${{ matrix.TAG }}
+      OS: ${{ matrix.OS }}
+      GCC: ${{ matrix.GCC }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: 下载工具链
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          if [[ $TAG == 19.07.10 ]] ; then
+          sudo apt-get install libncurses5-dev python2 gcc
+          fi
+          if [[ $TAG == snapshots ]] ; then
+          wget -qO /opt/sdk.tar.xz https://downloads.openwrt.org/snapshots/targets/ath79/generic/openwrt-sdk-ath79-generic_gcc-${GCC}_musl.Linux-x86_64.tar.xz
+          else
+          wget -qO /opt/sdk.tar.xz https://archive.openwrt.org/releases/${TAG}/targets/ath79/generic/openwrt-sdk-${TAG}-ath79-generic_gcc-${GCC}_musl.Linux-x86_64.tar.xz
+          fi
+          tar -xJf /opt/sdk.tar.xz -C /opt
+          git clone https://github.com/lmq8267/luci-app-vnt.git /opt/vnt
+          cd /opt/openwrt-sdk*/package
+          cp -R /opt/vnt/luci-app-vnt .
+          cd /opt/openwrt-sdk*
+          ./scripts/feeds update -a
+          make defconfig
+      - name: 开始编译
+        run: |
+          cd /opt/openwrt-sdk*
+          make package/luci-app-vnt/compile V=s -j1
+          cd /opt/openwrt-sdk*/bin/packages/mips_24kc/base
+          ls
+          mv *.ipk luci-app-vnt-${TAG}_all.ipk
+          echo "build_time=$(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+      - name: 发布
+        uses: softprops/action-gh-release@v1
+        with:
+            token: ${{ secrets.c8 }}
+            body: |
+             > ### 编译时间 ：${{ env.build_time }}
+
+             luci-app-vnt-（这是openwrt版本）_all.ipk
+             
+             对应的[openwrt版本列表](https://downloads.openwrt.org/)
+           
+            tag_name: ath79-generic-mips_24kc
+            files: /opt/openwrt-sdk*/bin/packages/mips_24kc/base/*
