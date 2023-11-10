@@ -115,7 +115,6 @@ esac
 		[ -z "$vntshost" ] || procd_append_param command -s "$vntshost"
 		[ -z "$stunhost" ] || procd_append_param command -e "$stunhost"
 		[ -z "$client_port" ] || procd_append_param command --port "$client_port"
-		[ -z "$key" ] || procd_append_param command -w "$key"
 		if [ ! -z "$peeradd" ] ; then
                   if [[ "$(grep "list peeradd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                     procd_append_param command -i "$peeradd"
@@ -137,7 +136,8 @@ esac
                 fi
 		[ -z "$par" ] || procd_append_param command --par "$par"
 		[ "$punch" = "ipv4/ipv6" ] || procd_append_param command --punch "$punch"
-		[ "$passmode" = "off" ] || procd_append_param command --model "$passmode"
+		[ "$passmode" != "off" ] && [ -n "$key" ] && procd_append_param command --model "$passmode"
+		[ "$passmode" != "off" ] && [ -n "$key" ] && procd_append_param command -w "$key"
 		[ "$tunmode" = "tun" ] || procd_append_param command -a
 		[ "$tcp" = "udp" ] || procd_append_param command --tcp
 		[ "$forward" = "0" ] || procd_append_param command --no-proxy
