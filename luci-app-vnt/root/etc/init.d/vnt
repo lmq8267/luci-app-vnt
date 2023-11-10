@@ -296,6 +296,7 @@ stop_service() {
 	config_load 'vnt'
 	config_foreach stop_instance 'vnt-cli'
 	config_foreach stop_instance 'vnts'
+        rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
 }
 
 reload_service() {
