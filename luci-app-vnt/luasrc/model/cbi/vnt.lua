@@ -135,7 +135,7 @@ btn1.inputstyle = "apply"
 btn1.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --info >/tmp/vnt-cli_info")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_info")
@@ -157,7 +157,7 @@ btn2.inputstyle = "apply"
 btn2.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")  
-    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --all >/tmp/vnt-cli_all")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_all")
@@ -178,7 +178,7 @@ btn3.inputstyle = "apply"
 btn3.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --list >/tmp/vnt-cli_list")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_list")
@@ -199,7 +199,7 @@ btn4.inputstyle = "apply"
 btn4.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --route >/tmp/vnt-cli_route")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_route")
