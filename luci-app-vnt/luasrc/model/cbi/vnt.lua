@@ -14,6 +14,7 @@ s.anonymous = true
 
 s:tab("general", translate("基本设置"))
 s:tab("privacy", translate("高级设置"))
+s:tab("infos", translate("连接信息"))
 s:tab("upload", translate("上传程序"))
 
 switch = s:taboption("general",Flag, "enabled", translate("Enable"))
@@ -125,6 +126,93 @@ first_latency.rmempty = false
 multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组播"),
 	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
 multicast.rmempty = false
+
+local process_status = luci.sys.exec("ps | grep vnt-cli | grep -v grep")
+btn1 = s:taboption("infos", Button, "btn1")
+btn1.inputtitle = translate("本机设备信息")
+btn1.description = translate("点击上方按钮刷新，查看当前设备信息")
+btn1.inputstyle = "apply"
+btn1.write = function()
+if process_status ~= "" then
+    luci.sys.call("mkdir -p /root/.vnt-cli")
+    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --info >/tmp/vnt-cli_info")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_info")
+end
+end
+
+btn1info = s:taboption("infos", DummyValue, "btn1info")
+btn1info.rawhtml = true
+btn1info.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnt-cli_info") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
+
+
+btn2 = s:taboption("infos", Button, "btn2")
+btn2.inputtitle = translate("所有设备信息")
+btn2.description = translate("点击上方按钮刷新，查看所有设备详细信息")
+btn2.inputstyle = "apply"
+btn2.write = function()
+if process_status ~= "" then
+    luci.sys.call("mkdir -p /root/.vnt-cli")  
+    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --all >/tmp/vnt-cli_all")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_all")
+end
+end
+
+btn2all = s:taboption("infos", DummyValue, "btn2all")
+btn2all.rawhtml = true
+btn2all.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnt-cli_all") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
+
+btn3 = s:taboption("infos", Button, "btn3")
+btn3.inputtitle = translate("所有设备列表")
+btn3.description = translate("点击上方按钮刷新，查看所有设备列表")
+btn3.inputstyle = "apply"
+btn3.write = function()
+if process_status ~= "" then
+    luci.sys.call("mkdir -p /root/.vnt-cli")
+    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --list >/tmp/vnt-cli_list")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_list")
+end
+end
+
+btn3list = s:taboption("infos", DummyValue, "btn3list")
+btn3list.rawhtml = true
+btn3list.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnt-cli_list") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
+
+btn4 = s:taboption("infos", Button, "btn4")
+btn4.inputtitle = translate("路由转发信息")
+btn4.description = translate("点击上方按钮刷新，查看本机路由转发路径")
+btn4.inputstyle = "apply"
+btn4.write = function()
+if process_status ~= "" then
+    luci.sys.call("mkdir -p /root/.vnt-cli")
+    luci.sys.call("echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+    luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --route >/tmp/vnt-cli_route")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_route")
+end
+end
+
+btn4route = s:taboption("infos", DummyValue, "btn4route")
+btn4route.rawhtml = true
+btn4route.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnt-cli_route") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
+
 
 local upload = s:taboption("upload", FileUpload, "upload_file")
 upload.optional = true
