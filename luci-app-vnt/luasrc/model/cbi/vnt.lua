@@ -24,6 +24,24 @@ token = s:taboption("general", Value, "token", translate("VPN名称"),
 	translate("一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网"))
 token.optional = false
 token.placeholder = "abc123"
+token.datatype = "string"
+token.maxlength = 63
+token.minlength = 1
+token.validate = function(self, value, section)
+    if value and #value >= 1 and #value <= 63 then
+        return value
+    else
+        return nil, translate("VPN名称为必填项，可填1至63位字符")
+    end
+end
+switch.write = function(self, section, value)
+    if value == "1" then
+        token.rmempty = false
+    else
+        token.rmempty = true
+    end
+    return Flag.write(self, section, value)
+end
 
 mode = s:taboption("general",ListValue, "mode", translate("接口模式"))
 mode:value("dhcp")
