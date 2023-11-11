@@ -21,7 +21,7 @@ switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
 token = s:taboption("general", Value, "token", translate("VPN名称"),
-	translate("一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网"))
+	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网"))
 token.optional = false
 token.placeholder = "abc123"
 token.datatype = "string"
