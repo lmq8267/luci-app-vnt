@@ -113,7 +113,6 @@ esac
 		[ -z "$desvice_id" ] || procd_append_param command -d "$desvice_id"
 		[ -z "$desvice_name" ] || procd_append_param command -n "$desvice_name"
 		[ -z "$vntshost" ] || procd_append_param command -s "$vntshost"
-		[ -z "$stunhost" ] || procd_append_param command -e "$stunhost"
 		[ -z "$client_port" ] || procd_append_param command --port "$client_port"
 		if [ ! -z "$peeradd" ] ; then
                   if [[ "$(grep "list peeradd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
@@ -131,6 +130,16 @@ esac
                  else
                    for localaddr in $(cat /etc/config/vnt | grep 'list localadd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
                    procd_append_param command -o "$localaddr"
+                   done
+                   fi
+                fi
+
+                if [ ! -z "$stunhost" ] ; then
+                  if [[ "$(grep "list stunhost" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                    procd_append_param command -e "$stunhost"
+                  else
+                    for stunhosts in $(cat /etc/config/vnt | grep 'list stunhost'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                    procd_append_param command -e "$stunhosts"
                    done
                    fi
                 fi
