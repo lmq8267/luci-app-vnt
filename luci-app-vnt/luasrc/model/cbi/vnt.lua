@@ -48,7 +48,8 @@ peeradd = s:taboption("general",DynamicList, "peeradd", translate("对端网段"
 	translate("格式为对端的lanIP网段加英文，对端的接口IP，例如对端lanIP为192.168.2.1接口IP10.26.0.3则填192.168.2.0/24,10.26.0.3"))
 peeradd.placeholder = "192.168.2.0/24,10.26.0.3"
 
-forward = s:taboption("general",Flag, "forward", translate("启用IP转发"))
+forward = s:taboption("general",Flag, "forward", translate("启用IP转发"),
+	translate("内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高,所以默认开启IP转发关闭内置的ip代理"))
 forward.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
@@ -67,7 +68,8 @@ desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备�
 	translate("本机设备名称，方便区分不同设备"))
 desvice_name.placeholder = "openwrt"
 
-tunmode = s:taboption("privacy",ListValue, "tunmode", translate("TUN/TAP网卡"))
+tunmode = s:taboption("privacy",ListValue, "tunmode", translate("TUN/TAP网卡"),
+	translate("默认使用tun网卡，tun网卡效率更高"))
 tunmode:value("tun")
 tunmode:value("tap")
 
