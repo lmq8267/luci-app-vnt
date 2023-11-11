@@ -59,7 +59,7 @@ vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地
 	translate("相同的服务器，相同VPN名称的设备才会组成一个局域网"))
 vntshost.placeholder = "域名:端口"
 
-stunhost = s:taboption("privacy",Value, "stunhost", translate("stun服务器地址"),
+stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务器地址"),
 	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填"))
 stunhost.placeholder = "stun.qq.com:3478"
 
