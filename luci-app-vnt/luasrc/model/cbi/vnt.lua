@@ -79,7 +79,7 @@ vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地
 vntshost.placeholder = "域名:端口"
 
 stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务器地址"),
-	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填"))
+	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
 stunhost.placeholder = "stun.qq.com:3478"
 
 desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
@@ -128,11 +128,11 @@ client_port = s:taboption("privacy", Value, "client_port", translate("本地监�
 client_port.datatype = "port"
 
 serverw = s:taboption("privacy",Flag, "serverw", translate("启用服务端客户端加密"),
-	translate("用服务端通信的数据加密，采用rsa+aes256gcm加密客户端和服务端之间通信的数据，可以避免token泄漏、中间人攻击，上面的加密模式是客户端与客户端之间加密，这是服务器和客户端之间的加密，不是一个性质，无需选择加密模式"))
+	translate("用服务端通信的数据加密，采用rsa+aes256gcm加密客户端和服务端之间通信的数据，可以避免token泄漏、中间人攻击，<br>上面的加密模式是客户端与客户端之间加密，这是服务器和客户端之间的加密，不是一个性质，无需选择加密模式"))
 serverw.rmempty = false
 
 finger = s:taboption("privacy",Flag, "finger", translate("启用数据指纹校验"),
-	translate("开启数据指纹校验，可增加安全性，如果服务端开启指纹校验，则客户端也必须开启，开启会损耗一部分性能。注意：默认情况下服务端不会对中转的数据做校验，如果要对中转的数据做校验，则需要客户端、服务端都开启此参数"))
+	translate("开启数据指纹校验，可增加安全性，如果服务端开启指纹校验，则客户端也必须开启，开启会损耗一部分性能。<br>注意：默认情况下服务端不会对中转的数据做校验，如果要对中转的数据做校验，则需要客户端、服务端都开启此参数"))
 finger.rmempty = false
 
 relay = s:taboption("privacy",Flag, "relay", translate("禁用P2P"),
@@ -144,13 +144,13 @@ first_latency = s:taboption("privacy",Flag, "first_latency", translate("启用�
 first_latency.rmempty = false
 
 multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组播"),
-	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
+	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。<br>1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。<br>2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
 multicast.rmempty = false
 
 local process_status = luci.sys.exec("ps | grep vnt-cli | grep -v grep")
 btn1 = s:taboption("infos", Button, "btn1")
 btn1.inputtitle = translate("本机设备信息")
-btn1.description = translate("点击上方按钮刷新，查看当前设备信息")
+btn1.description = translate("点击按钮刷新，查看当前设备信息")
 btn1.inputstyle = "apply"
 btn1.write = function()
 if process_status ~= "" then
@@ -172,7 +172,7 @@ end
 
 btn2 = s:taboption("infos", Button, "btn2")
 btn2.inputtitle = translate("所有设备信息")
-btn2.description = translate("点击上方按钮刷新，查看所有设备详细信息")
+btn2.description = translate("点击按钮刷新，查看所有设备详细信息")
 btn2.inputstyle = "apply"
 btn2.write = function()
 if process_status ~= "" then
@@ -193,7 +193,7 @@ end
 
 btn3 = s:taboption("infos", Button, "btn3")
 btn3.inputtitle = translate("所有设备列表")
-btn3.description = translate("点击上方按钮刷新，查看所有设备列表")
+btn3.description = translate("点击按钮刷新，查看所有设备列表")
 btn3.inputstyle = "apply"
 btn3.write = function()
 if process_status ~= "" then
@@ -214,7 +214,7 @@ end
 
 btn4 = s:taboption("infos", Button, "btn4")
 btn4.inputtitle = translate("路由转发信息")
-btn4.description = translate("点击上方按钮刷新，查看本机路由转发路径")
+btn4.description = translate("点击按钮刷新，查看本机路由转发路径")
 btn4.inputstyle = "apply"
 btn4.write = function()
 if process_status ~= "" then
@@ -238,7 +238,7 @@ local upload = s:taboption("upload", FileUpload, "upload_file")
 upload.optional = true
 upload.default = ""
 upload.template = "vnt/other_upload"
-upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包,可以上传新版本会自动覆盖旧版本")
+upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包,上传新版本会自动覆盖旧版本，下载地址：<a href='https://github.com/lbl8603/vnt/releases' target='_blank'>vnt-cli</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://github.com/lbl8603/vnts/releases' target='_blank'>vnts</a><br>上传的文件将会保存在/tmp文件夹里，如果在高级设置里自定义了程序路径那么启动程序时将会自动移至自定义的路径<br>")
 local um = s:taboption("upload",DummyValue, "", nil)
 um.template = "vnt/other_dvalue"
 
@@ -315,7 +315,7 @@ vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
 vntsbin.placeholder = "/tmp/vnts"
 
 logs = s:option(Flag, "logs", translate("启用日志"),
-	translate("在vnts启动后会生成运行日志在/root/log目录里，最高会多达数M，默认不生成日志）"))
+	translate("在vnts启动后会生成运行日志在/root/log目录里，最高会多达数M，默认不生成日志"))
 logs.rmempty = false
 
 return m
