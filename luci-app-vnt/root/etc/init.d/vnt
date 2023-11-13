@@ -3,25 +3,10 @@
 
 START=99
 USE_PROCD=1
+size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
 
-
-start_instance() {
-         local cfg="$1"
-
-	local type
-	config_get type "$cfg" TYPE
-        cputype=$(uname -ms | tr ' ' '_' | tr '[A-Z]' '[a-z]')
-        [ -n "$(echo $cputype | grep -E "linux.*armv.*")" ] && cpucore="arm"
-        [ -n "$(echo $cputype | grep -E "linux.*armv7.*")" ] && [ -n "$(cat /proc/cpuinfo | grep vfp)" ] && [ ! -d /jffs/clash ] && cpucore="armv7"
-        [ -n "$(echo $cputype | grep -E "linux.*aarch64.*|linux.*armv8.*")" ] && cpucore="aarch64"
-        [ -n "$(echo $cputype | grep -E "linux.*86.*")" ] && cpucore="i386"
-        [ -n "$(echo $cputype | grep -E "linux.*86_64.*")" ] && cpucore="x86_64"
-        if [ -n "$(echo $cputype | grep -E "linux.*mips.*")" ] ; then
-           mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
-           [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
-        fi
-	case "$type" in
-	vnt-cli)
+start_vntcli() {
+                local cfg="$1"
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
@@ -29,26 +14,26 @@ start_instance() {
                 if [ -z "$clibin" ] ;then
                    clibin=/tmp/vnt-cli
                 fi
-                size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/log/vnt-cli.log
                 path=$(dirname "$clibin")
                 if [ -f /tmp/vnt-cli ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnt-cli
-                   logger "vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin "
+                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin " >>/log/vnt-cli.log
                    upsize="$(du -k /tmp/vnt-cli | cut -f1)"
                    result=$(expr $size - $upsize)
                    if [ $(($(/tmp/vnt-cli -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
                      mv -f /tmp/vnt-cli "$clibin"
                      else
-                     logger "vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb"
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/log/vnt-cli.log
                    fi
                 fi
                 if [ ! -f "$clibin" ] && [ "$size" -lt 4000 ] ; then
-                    logger "vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnt-cli"
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnt-cli" >>/log/vnt-cli.log
                     sed -i "/clibin/c option clibin '/tmp/vnt-cli' " /etc/config/vnt 
                     clibin=/tmp/vnt-cli
                 fi
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
-		 logger "vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候 "
+		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/log/vnt-cli.log
                  mkdir -p "$path"
 case "${cpucore}" in 
 	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
@@ -68,16 +53,18 @@ case "${cpucore}" in
 esac
  chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
-    logger "vnt : ${clibin} 下载成功"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin} 下载成功" >>/log/vnt-cli.log
  else
-    logger "vnt : $clibin 下载失败，请手动下载上传程序,程序退出"
-    exit 1
+   uci -q set vnt.@vnt-cli[0].enabled=0
+   uci commit
+   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $clibin 下载失败，请手动下载上传程序,程序退出" >>/log/vnt-cli.log
+   return 1
  fi
                 fi
                 chmod +x "$clibin"
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		local token mode ipaddr mtu desvice_id localadd 
+		local token mode ipaddr mtu desvice_id localadd log
 		local peeradd desvice_name vntshost stunhost 
 		local punch client_port par key forward serverw 
 		local finger relay first_latency multicast tunmode tcp passmode
@@ -104,7 +91,39 @@ esac
 		config_get_bool finger "$cfg" 'finger' '0'
 		config_get_bool multicast "$cfg" 'multicast' '0'
 		config_get_bool first_latency "$cfg" 'first_latency' '0'
-               
+                config_get_bool log "$cfg" 'log' '0'
+               if [ "$log" = "1" ] ;then
+                 if [ ! -f /tmp/log4rs.yaml ] ; then
+                  cat > /tmp/log4rs.yaml<<EOF
+refresh_rate: 30 seconds
+appenders:
+  rolling_file:
+    kind: rolling_file
+    path: log/vnt-cli.log
+    append: true
+    encoder:
+      pattern: "{d} [{f}:{L}] {h({l})} {M}:{m}{n}"
+    policy:
+      kind: compound
+      trigger:
+        kind: size
+        limit: 1 mb
+      roller:
+        kind: fixed_window
+        pattern: log/vnt-cli.{}.log
+        base: 1
+        count: 2
+
+root:
+  level: info
+  appenders:
+    - rolling_file
+EOF
+           fi
+        [ ! -L /log4rs.yaml ] && rm -rf /log4rs.yaml && ln -sf /tmp/log4rs.yaml /log4rs.yaml
+      else
+      rm -rf /tmp/log4rs.yaml
+          fi
 		procd_open_instance "vnt-cli"
 		procd_set_param command "$clibin"
 		procd_append_param command -k "$token"
@@ -168,46 +187,52 @@ esac
                 iptables -I FORWARD -i vnt-tun -j ACCEPT
                 iptables -I INPUT -i vnt-tun -j ACCEPT
 		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1
-	;;
-	vnts)
+}
+
+start_vnts() {
+                local cfg="$1"
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/log/vnts.log
                 config_get vntsbin "$cfg" 'vntsbin'
                 if [ -z "$vntsbin" ] ;then
                    vntsbin=/tmp/vnts
                 fi
-                size="$(df -k | awk '/\/overlay$/ {sub(/K$/, "", $4); print $4}')"
                 path=$(dirname "$vntsbin")
                 if [ -f /tmp/vnts ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnts
-                   logger "vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin "
+                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin " >>/log/vnts.log
                    upsize="$(du -k /tmp/vnts | cut -f1)"
                    result=$(expr $size - $upsize)
                    if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
                      mv -f /tmp/vnts "$vntsbin"
                      else
-                     logger "vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb"
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/log/vnts.log
                    fi
                 fi
                 if [ ! -f "$vntsbin" ] && [ "$size" -lt 4000 ] ; then
-                    logger "vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts"
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts" >>/log/vnts.log
                     sed -i "/vntsbin/c option vntsbin '/tmp/vnts' " /etc/config/vnt 
                     vntsbin=/tmp/vnts
                 fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
-		logger "vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本"
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
 		case "${cpucore}" in 
 	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
 	           ;;
-	           "mips")  logger "vnt : 官方暂未发布mips版本，请联系群里，程序退出" 
-                   exit 1
+	           "mips")  echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 官方暂未发布mips版本，请联系群里，程序退出" >>/log/vnts.log
+	           uci -q set vnt.@vnts[0].enabled=0
+                   uci commit
+                   return 1
 	           ;;
 	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
 	           ;;
-	           "i386")  logger "vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出"
-                   exit 1
+	           "i386")  echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出" >>/log/vnts.log
+	           uci -q set vnt.@vnts[0].enabled=0
+                   uci commit
+                   return 1
 	           ;;
 	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
 	           ;;
@@ -220,11 +245,13 @@ esac
                    chmod +x /tmp/vnts
                    rm -rf /tmp/vnts.tar.gz
                   if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
-                    logger "vnt : /tmp/vnts 下载成功"
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : /tmp/vnts 下载成功" >>/log/vnts.log
                     mv -f /tmp/vnts "$vntsbin"
                  else
-                     logger "vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出"
-                     exit 1
+                     uci -q set vnt.@vnts[0].enabled=0
+                     uci commit
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出" >>/log/vnts.log
+                     return 1
                   fi
                 fi
                chmod +x "$vntsbin"
@@ -262,54 +289,67 @@ esac
 
 		iptables -I INPUT -p udp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
                 iptables -I INPUT -p tcp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
-                [ "$logs" = "0" ] && rm -rf "$(dirname "$(find /root -name 'log4rs.yaml')")"
-	;;
-	esac
+	        [ "$(uci -q get vnt.@vnts[0].logs)" = "0" ] && rm -rf /log/vnts*.log /log/log4rs.yaml
+	      if [ "$logs" = "1" ] ;then
+	       sed -i 's|limit: 10 mb|limit: 1 mb|g' /log/log4rs.yaml
+	       sed -i 's|count: 5|count: 2|g' /log/log4rs.yaml
+	      else
+	       rm -rf /log/log4rs.yaml
+	      fi
 }
 
-stop_instance() {
-	local cfg="$1"
-
-	local type
-	config_get type "$cfg" TYPE
-
-	case "$type" in
-	vnt-cli)
+stop_cli() {
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D FORWARD -o vnt-tun -j ACCEPT 2>"/dev/null"
                 iptables -D FORWARD -i vnt-tun -j ACCEPT 2>"/dev/null"
                 iptables -D INPUT -i vnt-tun -j ACCEPT 2>"/dev/null"
-	;;
-	vnts)
+                rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
+                rm -rf /log/vnt-cli*.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnt-cli.log
+}
+stop_vnts() {
+	        local cfg="$1"
 		local server_port
 		config_get server_port "$cfg" 'server_port'
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
-
-	;;
-	esac
+                rm -rf /log/vnts*.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnts.log
 }
 
 start_service() {
-        logger "vnt : 开始启动"
 	config_load 'vnt'
-	config_foreach start_instance 'vnt-cli'
-	config_foreach start_instance 'vnts'
+	cputype=$(uname -ms | tr ' ' '_' | tr '[A-Z]' '[a-z]')
+        [ -n "$(echo $cputype | grep -E "linux.*armv.*")" ] && cpucore="arm"
+        [ -n "$(echo $cputype | grep -E "linux.*armv7.*")" ] && [ -n "$(cat /proc/cpuinfo | grep vfp)" ] && [ ! -d /jffs/clash ] && cpucore="armv7"
+        [ -n "$(echo $cputype | grep -E "linux.*aarch64.*|linux.*armv8.*")" ] && cpucore="aarch64"
+        [ -n "$(echo $cputype | grep -E "linux.*86.*")" ] && cpucore="i386"
+        [ -n "$(echo $cputype | grep -E "linux.*86_64.*")" ] && cpucore="x86_64"
+        if [ -n "$(echo $cputype | grep -E "linux.*mips.*")" ] ; then
+           mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
+           [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
+        fi
+        
+        if [ ! -L /log ] ; then
+          [ -d /log ] && rm -rf /log
+          mkdir -p /tmp/vnt_logs
+          ln -sf /tmp/vnt_logs /log
+        fi
+        [ ! -d /root/.vnt-cli ] && mkdir -p /root/.vnt-cli
+        [ ! -L /.vnt-cli ] && rm -rf /.vnt-cli && ln -sf /root/.vnt-cli /.vnt-cli
+	[ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "1" ] && config_foreach start_vntcli 'vnt-cli'
+	[ "$(uci -q get vnt.@vnts[0].enabled)" = "1" ] && config_foreach start_vnts 'vnts'
 }
 
 stop_service() {
-        logger "vnt : 停止运行"
-	config_load 'vnt'
-	config_foreach stop_instance 'vnt-cli'
-	config_foreach stop_instance 'vnts'
-        rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
+        [ "$(uci -q get vnt.@vnts[0].enabled)" = "0" ] && stop_vnts 'vnts'
+        [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "0" ] && stop_cli
 }
 
 reload_service() {
-       logger "vnt : 重新启动"
 	stop
 	start
 }
