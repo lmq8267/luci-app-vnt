@@ -63,7 +63,7 @@ esac
                 fi
                 chmod +x "$clibin"
                 ver="$($clibin -h | grep version | awk -F ':' {'print $2'})"
-                [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}_${ver} " >>/log/vnt-cli.log
+                [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}当前版本号-${ver} " >>/log/vnt-cli.log
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd log
