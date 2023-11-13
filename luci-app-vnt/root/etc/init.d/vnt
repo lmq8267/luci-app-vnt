@@ -62,6 +62,8 @@ esac
  fi
                 fi
                 chmod +x "$clibin"
+                ver="$($clibin -h | grep version | awk -F ':' {'print $2'})"
+                [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}_${ver} " >>/log/vnt-cli.log
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd log
@@ -257,12 +259,13 @@ start_vnts() {
                chmod +x "$vntsbin"
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		local server_port white_Token subnet servern_netmask logs
+		local server_port white_Token subnet servern_netmask logs sfinger
 		config_get server_port "$cfg" 'server_port'
 		config_get white_Token "$cfg" 'white_Token'
 		config_get subnet "$cfg" 'subnet'
 		config_get servern_netmask "$cfg" 'servern_netmask'
                 config_get_bool logs "$cfg" 'logs' '0'
+                config_get_bool sfinger "$cfg" 'sfinger' '0'
 
 		procd_open_instance "vnts"
 		procd_set_param command "$vntsbin"
@@ -279,6 +282,7 @@ start_vnts() {
                 fi
 		[ -z "$subnet" ] || procd_append_param command --gateway "$subnet"
 		[ -z "$servern_netmask" ] || procd_append_param command --netmask "$servern_netmask"
+                [ "$sfinger" = "0" ] || procd_append_param command --finger
 
 		procd_set_param limits core="unlimited"
 		procd_set_param limits nofile="1000000 1000000"
