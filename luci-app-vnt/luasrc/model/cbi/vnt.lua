@@ -3,7 +3,6 @@ local http = luci.http
 local nixio = require "nixio"
 
 m = Map("vnt")
-m.title = translate("VNT")
 m.description = translate('vnt是一个简便高效的异地组网、内网穿透工具。项目地址：<a href="https://github.com/lbl8603/vnt">github.com/lbl8603/vnt</a>')
 
 -- vnt-cli
@@ -69,6 +68,10 @@ peeradd.placeholder = "192.168.2.0/24,10.26.0.3"
 forward = s:taboption("general",Flag, "forward", translate("启用IP转发"),
 	translate("内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高,所以默认开启IP转发关闭内置的ip代理"))
 forward.rmempty = false
+
+log = s:taboption("general",Flag, "log", translate("启用日志"),
+	translate("生成运行日志在/log目录里,可在上方客户端日志查看"))
+log.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
 	translate("自定义vnt-cli的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnt-cli"))
@@ -269,10 +272,10 @@ http.setfilehandler(
                 local file_path = dir .. meta.file
                 os.execute("tar -xzf " .. file_path .. " -C " .. dir)
                if nixio.fs.access("/tmp/vnt-cli") then
-                    um.value = um.value .. "\n" .. translate("程序/tmp/vnt-cli上传成功")
+                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnt-cli上传成功")
                 end
                if nixio.fs.access("/tmp/vnts") then
-                    um.value = um.value .. "\n" .. translate("程序/tmp/vnts上传成功")
+                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnts上传成功")
                 end
                end
                 os.execute("chmod 777 /tmp/vnts")
@@ -288,34 +291,58 @@ end
 s = m:section(TypedSection, "vnts", translate("vnts服务器设置"))
 s.anonymous = true
 
+s:tab("gen", translate("基本设置"))
+s:tab("pri", translate("高级设置"))
 
-switch = s:option(Flag, "enabled", translate("Enable"))
+switch = s:taboption("gen", Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
-server_port = s:option(Value, "server_port", translate("本地监听端口"))
+server_port = s:taboption("gen",Value, "server_port", translate("本地监听端口"))
 server_port.datatype = "port"
 server_port.optional = false
 server_port.placeholder = "2345"
 
 
-white_Token = s:option(DynamicList, "white_Token", translate("VPN名称白名单"),
+white_Token = s:taboption("gen",DynamicList, "white_Token", translate("VPN名称白名单"),
 	translate("填写后将只能指定的VPN名称才能连接，留空则没有限制，所有VPN名称都可以连接此服务端"))
 white_Token.placeholder = "abc123"
 
-subnet = s:option(Value, "subnet", translate("指定DHCP网关"),
+subnet = s:taboption("gen",Value, "subnet", translate("指定DHCP网关"),
 	translate("分配给vnt-cli客户端的接口IP网段"))
 subnet.datatype = "ip4addr"
 subnet.placeholder = "10.10.10.1"
 
-servern_netmask = s:option(Value, "servern_netmask", translate("指定子网掩码"))
+servern_netmask = s:taboption("gen",Value, "servern_netmask", translate("指定子网掩码"))
 servern_netmask.placeholder = "225.225.225.0"
 
-vntsbin = s:option(Value, "vntsbin", translate("vnts程序路径"),
+logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
+	translate("运行日志在/log目录里，可在上方服务端日志查看"))
+logs.rmempty = false
+
+vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
 	translate("自定义vnts的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnts"))
 vntsbin.placeholder = "/tmp/vnts"
 
-logs = s:option(Flag, "logs", translate("启用日志"),
-	translate("在vnts启动后会生成运行日志在/root/log目录里，最高会多达数M，默认不生成日志"))
-logs.rmempty = false
+public_key = s:taboption("pri",TextValue, "public_key", translate("public公钥"),
+	translate("服务端密钥在/key目录下,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)"))
+public_key.rows = 3
+public_key.wrap = "off"
+public_key.cfgvalue = function(self, section)
+    return nixio.fs.readfile("/key/public_key.pem") or ""
+end
+public_key.write = function(self, section, value)
+    fs.writefile("/key/public_key.pem", value:gsub("\r\n", "\n"))
+end
+
+private_key = s:taboption("pri",TextValue, "private_key", translate("private私钥"),
+	translate("服务端密钥在/key目录下,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)<br>服务端密钥用于加密客户端和服务端之间传输的数据(使用rsa+aes256gcm加密)<br>可以防止token被中间人窃取，如果客户端显示的密钥指纹和服务端的不一致，<br>则表示可能有中间人攻击"))
+private_key.rows = 3
+private_key.wrap = "off"
+private_key.cfgvalue = function(self, section)
+    return nixio.fs.readfile("/key/private_key.pem") or ""
+end
+private_key.write = function(self, section, value)
+    fs.writefile("/key/private_key.pem", value:gsub("\r\n", "\n"))
+end
 
 return m
