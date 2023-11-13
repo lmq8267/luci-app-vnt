@@ -70,7 +70,7 @@ forward = s:taboption("general",Flag, "forward", translate("启用IP转发"),
 forward.rmempty = false
 
 log = s:taboption("general",Flag, "log", translate("启用日志"),
-	translate("生成运行日志在/log目录里,可在上方客户端日志查看"))
+	translate("运行日志在/log目录里,可在上方客户端日志查看"))
 log.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
