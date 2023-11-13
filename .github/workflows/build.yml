@@ -36,6 +36,6 @@ jobs:
 
              需要先去系统自带的软件包里安装 luci-lib-fs 和 kmod-tun 再安装这个ipk才能显示界面
            
-            tag_name: 1.0.0
+            tag_name: 1.1.0
             files: /opt/openwrt-sdk*/bin/packages/aarch64_generic/base/*
      
