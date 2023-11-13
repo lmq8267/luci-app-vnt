@@ -323,6 +323,10 @@ vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
 	translate("自定义vnts的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnts"))
 vntsbin.placeholder = "/tmp/vnts"
 
+sfinger = s:taboption("pri",Flag, "sfinger", translate("启用数据指纹校验"),
+	translate("开启后只会转发指纹正确的客户端数据包，增强安全性，这会损失一部分性能,如果服务端开启指纹校验，则客户端也必须开启。<br>注意：默认情况下服务端不会对中转的数据做校验，如果要对中转的数据做校验，则需要客户端、服务端都开启此参数"))
+sfinger.rmempty = false
+
 public_key = s:taboption("pri",TextValue, "public_key", translate("public公钥"),
 	translate("服务端密钥在/key目录下,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)"))
 public_key.rows = 3
