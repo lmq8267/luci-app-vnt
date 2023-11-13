@@ -333,7 +333,7 @@ start_service() {
            [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
         fi
         
-        if [ ! -L /log ] ; then
+        if [ ! -L /log ] || [ ! -d /log ]  ; then
           [ -d /log ] && rm -rf /log
           mkdir -p /tmp/vnt_logs
           ln -sf /tmp/vnt_logs /log
