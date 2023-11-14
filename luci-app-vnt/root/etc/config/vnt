@@ -24,6 +24,7 @@ config vnt-cli
 	option tcp 'udp'
 	option passmode 'off'
         option clibin '/tmp/vnt-cli'
+        option checktime '2'
 config vnts
 	option enabled '0'
 	option server_port '1235'
