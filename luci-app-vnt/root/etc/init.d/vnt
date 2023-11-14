@@ -213,19 +213,21 @@ while true; do
            online=""
            for ip in $(uci -q get vnt.@vnt-cli[0].checkip); do
            ms=`echo $(ping -4 $ip  -c 2 -w 4 -q) | awk -F '/' '{print $4}'`
-           [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/log/vnt-cli.5.log && online=1
-           [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/log/vnt-cli.5.log
+           [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/log/vnt-cli.log && online=1
+           [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/log/vnt-cli.log
            done     
-           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：网络中断,重新启动程序！ " >>/log/vnt-cli.5.log && /etc/init.d/vnt restart
+           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：网络中断,重新启动程序！ " >>/log/vnt-cli.log && /etc/init.d/vnt restart
         fi
      else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/log/vnt-cli.5.log
+        echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/log/vnt-cli.log
     fi
  else
- echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：程序未运行，跳过检测 " >>/log/vnt-cli.5.log
+ echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：程序已关闭，退出检测 " >>/log/vnt-cli.log
+ /etc/init.d/vnt restart
+ break
  fi
 sleep $((time))
-[ "$(du -k /log/vnt-cli.5.log | cut -f1)" = "100" ] && echo " " >/log/vnt-cli.5.log
+[ "$(du -k /log/vnt-cli.log | cut -f1)" = "1000" ] && echo " " >/log/vnt-cli.log
 done
 EOF
   chmod +x /tmp/vnt_check
