@@ -64,10 +64,11 @@ esac
                 chmod +x "$clibin"
                 ver="$($clibin -h | grep version | awk -F ':' {'print $2'})"
                 [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}当前版本号-${ver} " >>/log/vnt-cli.log
+                pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd log
-		local peeradd desvice_name vntshost stunhost 
+		local peeradd desvice_name vntshost stunhost checkip
 		local punch client_port par key forward serverw 
 		local finger relay first_latency multicast tunmode tcp passmode
 		config_get token "$cfg" 'token'
@@ -94,6 +95,7 @@ esac
 		config_get_bool multicast "$cfg" 'multicast' '0'
 		config_get_bool first_latency "$cfg" 'first_latency' '0'
                 config_get_bool log "$cfg" 'log' '0'
+                config_get checkip "$cfg" 'checkip'
                if [ "$log" = "1" ] ;then
                  if [ ! -f /tmp/log4rs.yaml ] ; then
                   cat > /tmp/log4rs.yaml<<EOF
@@ -189,6 +191,46 @@ EOF
                 iptables -I FORWARD -i vnt-tun -j ACCEPT
                 iptables -I INPUT -i vnt-tun -j ACCEPT
 		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1
+                [ ! -z "$checkip" ] && check
+}
+
+check () {
+if [ ! -z "$checkip" ] ; then
+  echo ' ' >/tmp/vnt_check
+  cat > /tmp/vnt_check<<'EOF'
+#!/bin/sh
+time="$(($(uci -q get vnt.@vnt-cli[0].checktime) * 60))"
+  if [ -z "$time" ] ;then
+     time=120
+     uci -q set vnt.@vnt-cli[0].checktime=2
+     uci commit
+  fi 
+while true; do
+  if [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "1" ] ; then
+    ping -c 3 223.5.5.5 -w 5 >/dev/null 2>&1
+    if [ "$?" == "0" ]; then
+        if [ ! -z "$(uci -q get vnt.@vnt-cli[0].checkip)" ] ; then
+           online=""
+           for ip in $(uci -q get vnt.@vnt-cli[0].checkip); do
+           ms=`echo $(ping -4 $ip  -c 2 -w 4 -q) | awk -F '/' '{print $4}'`
+           [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/log/vnt-cli.5.log && online=1
+           [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/log/vnt-cli.5.log
+           done     
+           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：网络中断,重新启动程序！ " >>/log/vnt-cli.5.log && /etc/init.d/vnt restart
+        fi
+     else
+        echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/log/vnt-cli.5.log
+    fi
+ else
+ echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：程序未运行，跳过检测 " >>/log/vnt-cli.5.log
+ fi
+sleep $((time))
+[ "$(du -k /log/vnt-cli.5.log | cut -f1)" = "100" ] && echo " " >/log/vnt-cli.5.log
+done
+EOF
+  chmod +x /tmp/vnt_check
+  /tmp/vnt_check &
+fi
 }
 
 start_vnts() {
@@ -303,6 +345,7 @@ start_vnts() {
 }
 
 stop_cli() {
+                pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D FORWARD -o vnt-tun -j ACCEPT 2>"/dev/null"
