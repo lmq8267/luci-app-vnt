@@ -216,7 +216,7 @@ while true; do
            [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/log/vnt-cli.log && online=1
            [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/log/vnt-cli.log
            done     
-           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：网络中断,重新启动程序！ " >>/log/vnt-cli.log && /etc/init.d/vnt restart
+           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：$(uci -q get vnt.@vnt-cli[0].checkip) 所有指定IP皆无法ping通,重新启动程序！ " >>/log/vnt-cli.log && /etc/init.d/vnt restart
         fi
      else
         echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/log/vnt-cli.log
