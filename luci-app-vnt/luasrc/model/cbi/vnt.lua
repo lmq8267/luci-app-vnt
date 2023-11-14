@@ -150,6 +150,22 @@ multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组�
 	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。<br>1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。<br>2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
 multicast.rmempty = false
 
+check = s:taboption("privacy",Flag, "check", translate("通断检测"),
+        translate("开启通断检测后，可以指定对端的设备IP，当所有指定的IP都ping不通时将会重启vnt程序"))
+
+checkip=s:taboption("privacy",DynamicList,"checkip",translate("检测IP"),
+        translate("确保这里的对端设备IP地址填写正确且可访问，若填写错误将会导致无法ping通，程序反复重启"))
+checkip.rmempty = true
+checkip.datatype = "ip4addr"
+checkip:depends("check", "1")
+
+checktime = s:taboption("privacy",ListValue, "checktime", translate("间隔时间 (分钟)"),
+        translate("检测间隔的时间，每隔多久检测指定的IP通断一次"))
+for s=1,60 do
+checktime:value(s)
+end
+checktime:depends("check", "1")
+
 local process_status = luci.sys.exec("ps | grep vnt-cli | grep -v grep")
 btn1 = s:taboption("infos", Button, "btn1")
 btn1.inputtitle = translate("本机设备信息")
