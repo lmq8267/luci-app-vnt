@@ -75,6 +75,57 @@ esac
                 config_get desvice_id "$cfg" 'desvice_id'
                 config_get desvice_name "$cfg" 'desvice_name'
                 config_get vntshost "$cfg" 'vntshost'
+#以下解析IP4P地址的脚本由恩山大佬liaohcai提供
+if [ ! -n "`echo $vntshost | grep ':'`" ] && [ ! -z "$vntshost" ] ;then
+	eval $(nslookup $vntshost 223.5.5.5 | awk '/2001/' |cut -d ':' -f 2-6 | awk -F: '{print "port="$3" ipa="$4" ipb="$5 }')
+##查询域名，并提取IP4P地址
+	port=$((0x$port))
+	ip1=$((0x${ipa:0:2}))
+	ip2=$((0x${ipa:2:2}))
+	ip3=$((0x${ipb:0:2}))
+	ip4=$((0x${ipb:2:2}))
+	ipv4="${ip1}.${ip2}.${ip3}.${ip4}:${port}"
+	lastIP="$(cat /tmp/natmap-vnts-ip4p.txt)"
+	#检查ip是否变动
+		if [ "$lastIP" != "$ipv4" ] ; then
+echo ${ip1}.${ip2}.${ip3}.${ip4}:${port} > /tmp/natmap-vnts-ip4p.txt
+		fi
+	vntshost="${ipv4}"
+	
+cat <<'EOF2'> "/tmp/vnts_ip4p.sh"
+#!/bin/ash
+
+ddns=$(uci -q get vnt.@vnt-cli[0].vntshost)
+if [  -n "`echo $ddns | grep ':'`" ] || [  -z "$ddns" ] ;then
+exit
+fi
+while true; do
+if [ ! -n "`echo $ddns | grep ':'`" ] && [ ! -z "$ddns" ] ;then
+	eval $(nslookup $ddns 223.5.5.5 | awk '/2001/' |cut -d ':' -f 2-6 | awk -F: '{print "port="$3" ipa="$4" ipb="$5 }')
+##查询域名，并提取IP4P地址
+	port=$((0x$port))
+	ip1=$((0x${ipa:0:2}))
+	ip2=$((0x${ipa:2:2}))
+	ip3=$((0x${ipb:0:2}))
+	ip4=$((0x${ipb:2:2}))
+	ipv4="${ip1}.${ip2}.${ip3}.${ip4}:${port}"
+	lastIP="$(cat /tmp/natmap-vnts-ip4p.txt)"
+	#检查ip是否变动
+		if [ "$lastIP" != "$ipv4" ] ; then
+echo ${ip1}.${ip2}.${ip3}.${ip4}:${port} > /tmp/natmap-vnts-ip4p.txt
+		/etc/init.d/vnt restart
+		fi
+fi
+if [  -n "`echo $ddns | grep ':'`" ] || [  -z "$ddns" ] ;then
+exit
+fi
+sleep 120
+done
+EOF2
+
+chmod +x "/tmp/vnts_ip4p.sh"
+ash /tmp/vnts_ip4p.sh &
+fi
                 config_get stunhost "$cfg" 'stunhost'
                 config_get client_port "$cfg" 'client_port'
                 config_get par "$cfg" 'par'
