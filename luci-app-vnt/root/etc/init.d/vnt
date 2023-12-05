@@ -56,7 +56,7 @@ esac
     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin} 下载成功" >>/log/vnt-cli.log
  else
    uci -q set vnt.@vnt-cli[0].enabled=0
-   uci commit
+   uci commit vnt
    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $clibin 下载失败，请手动下载上传程序,程序退出" >>/log/vnt-cli.log
    return 1
  fi
@@ -254,7 +254,7 @@ time="$(($(uci -q get vnt.@vnt-cli[0].checktime) * 60))"
   if [ -z "$time" ] ;then
      time=120
      uci -q set vnt.@vnt-cli[0].checktime=2
-     uci commit
+     uci commit vnt
   fi 
 while true; do
   if [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "1" ] ; then
@@ -321,15 +321,12 @@ start_vnts() {
 	           ;;
 	           "mips")  echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 官方暂未发布mips版本，请联系群里，程序退出" >>/log/vnts.log
 	           uci -q set vnt.@vnts[0].enabled=0
-                   uci commit
+                   uci commit vnt
                    return 1
 	           ;;
 	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
 	           ;;
-	           "i386")  echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 不确定版本程序，请前往官方手动下载上传或联系群里，程序退出" >>/log/vnts.log
-	           uci -q set vnt.@vnts[0].enabled=0
-                   uci commit
-                   return 1
+	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-i686-unknown-linux-musl-1.2.4.tar.gz
 	           ;;
 	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
 	           ;;
@@ -346,7 +343,7 @@ start_vnts() {
                     mv -f /tmp/vnts "$vntsbin"
                  else
                      uci -q set vnt.@vnts[0].enabled=0
-                     uci commit
+                     uci commit vnt
                      echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出" >>/log/vnts.log
                      return 1
                   fi
@@ -440,8 +437,8 @@ start_service() {
         fi
         [ ! -d /root/.vnt-cli ] && mkdir -p /root/.vnt-cli
         [ ! -L /.vnt-cli ] && rm -rf /.vnt-cli && ln -sf /root/.vnt-cli /.vnt-cli
-	[ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "1" ] && config_foreach start_vntcli 'vnt-cli'
-	[ "$(uci -q get vnt.@vnts[0].enabled)" = "1" ] && config_foreach start_vnts 'vnts'
+	config_foreach start_vntcli 'vnt-cli'
+	config_foreach start_vnts 'vnts'
 }
 
 stop_service() {
