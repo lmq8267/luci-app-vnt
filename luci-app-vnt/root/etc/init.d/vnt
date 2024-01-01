@@ -317,22 +317,19 @@ start_vnts() {
 		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
 		case "${cpucore}" in 
-	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-mipsel-unknown-linux-musl-1.2.4.tar.gz
+	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mipsel-unknown-linux-musl-1.2.8.3.tar.gz
 	           ;;
-	           "mips")  echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 官方暂未发布mips版本，请联系群里，程序退出" >>/log/vnts.log
-	           uci -q set vnt.@vnts[0].enabled=0
-                   uci commit vnt
-                   return 1
+	           "mips")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mips-unknown-linux-musl-1.2.8.3.tar.gz
 	           ;;
-	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-x86_64-unknown-linux-gnu-1.2.4.tar.gz
+	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-x86_64-unknown-linux-gnu-1.2.8.3.tar.gz
 	           ;;
-	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-i686-unknown-linux-musl-1.2.4.tar.gz
+	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-i686-unknown-linux-musl-1.2.8.3.tar.gz
 	           ;;
-	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-arm-unknown-linux-gnueabihf-1.2.4.tar.gz
+	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-arm-unknown-linux-gnueabihf-1.2.8.3.tar.gz
 	           ;;
-	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-armv7-unknown-linux-gnueabihf-1.2.4.tar.gz
+	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-armv7-unknown-linux-gnueabihf-1.2.8.3.tar.gz
 	           ;;
-	           "aarch64")  curl -L -k -o/tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.4/vnts-aarch64-unknown-linux-gnu-1.2.4.tar.gz
+	           "aarch64")  curl -L -k -o/tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-aarch64-unknown-linux-gnu-1.2.8.3.tar.gz
 	           ;;
                    esac
                    tar zxf /tmp/vnts.tar.gz -C /tmp/
