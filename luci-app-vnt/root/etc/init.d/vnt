@@ -36,19 +36,19 @@ start_vntcli() {
 		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/log/vnt-cli.log
                  mkdir -p "$path"
 case "${cpucore}" in 
-	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mipsle
+	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_mipsle
 	;;
-	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_mips
+	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_mips
 	;;
-	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_x86_64
+	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_x86_64
 	;;
-	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_i386
+	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_i386
 	;;
-	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_arm
+	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_arm
 	;;
-	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_armv7
+	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_armv7
 	;;
-	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://free1.fujufrp.cf:19213/vnt-cli_aarch64
+	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_aarch64
 	;;
 esac
  chmod +x "$clibin"
@@ -243,6 +243,7 @@ EOF
                 iptables -I INPUT -i vnt-tun -j ACCEPT
 		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1
                 [ ! -z "$checkip" ] && check
+                echo `date +%s` > /tmp/vnt_time
 }
 
 check () {
@@ -314,7 +315,7 @@ start_vnts() {
                     vntsbin=/tmp/vnts
                 fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.4版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.8.3版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
 		case "${cpucore}" in 
 	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mipsel-unknown-linux-musl-1.2.8.3.tar.gz
@@ -389,6 +390,7 @@ start_vnts() {
 	      else
 	       rm -rf /log/log4rs.yaml
 	      fi
+              echo `date +%s` > /tmp/vnts_time
 }
 
 stop_cli() {
