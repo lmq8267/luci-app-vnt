@@ -20,7 +20,7 @@ switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
 token = s:taboption("general", Value, "token", translate("VPN名称"),
-	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网"))
+	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网（这是 -k 参数）"))
 token.optional = false
 token.placeholder = "abc123"
 token.datatype = "string"
@@ -82,7 +82,7 @@ vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地
 vntshost.placeholder = "域名:端口"
 
 stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务器地址"),
-	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
+	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，已内置谷歌 QQ 可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
 stunhost.placeholder = "stun.qq.com:3478"
 
 desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
@@ -336,7 +336,7 @@ logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
 logs.rmempty = false
 
 vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
-	translate("自定义vnts的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnts"))
+	translate("自定义vnts的存放路径，确保填写完整的路径及名称,若指定的路径可用空间不足将会自动移至/tmp/vnts，可使用上方客户端里上传程序进行上传"))
 vntsbin.placeholder = "/tmp/vnts"
 
 sfinger = s:taboption("pri",Flag, "sfinger", translate("启用数据指纹校验"),
