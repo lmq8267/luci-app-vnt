@@ -257,7 +257,7 @@ local upload = s:taboption("upload", FileUpload, "upload_file")
 upload.optional = true
 upload.default = ""
 upload.template = "vnt/other_upload"
-upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包,上传新版本会自动覆盖旧版本，下载地址：<a href='https://github.com/lbl8603/vnt/releases' target='_blank'>vnt-cli</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://github.com/lbl8603/vnts/releases' target='_blank'>vnts</a><br>上传的文件将会保存在/tmp文件夹里，如果在高级设置里自定义了程序路径那么启动程序时将会自动移至自定义的路径<br>")
+upload.description = translate("可直接上传二进制程序vnt-cli和vnts或者以.tar.gz结尾的压缩包,上传新版本会自动覆盖旧版本，下载地址：<a href='https://github.com/lbl8603/vnt/releases' target='_blank'>vnt-cli</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://github.com/lbl8603/vnts/releases' target='_blank'>vnts</a>&nbsp;下载地址2：&nbsp;<a href='http://dl.8267.cloudns.biz/dl/https://github.com/lbl8603/vnt/releases' target='_blank'>vnt-cli</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://dl.8267.cloudns.biz/dl/https://github.com/lbl8603/vnts/releases' target='_blank'>vnts</a><br>上传的文件将会保存在/tmp文件夹里，如果在高级设置里自定义了程序路径那么启动程序时将会自动移至自定义的路径<br>")
 local um = s:taboption("upload",DummyValue, "", nil)
 um.template = "vnt/other_dvalue"
 
