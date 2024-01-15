@@ -11,7 +11,11 @@ XHR.poll(3, '<%=url([[admin]], [[vpn]], [[vnt]], [[status]])%>', null,
             var vntsta2Content = data.srunning ? "<span style='color:#DA70D6;'>" + data.vntsta2 + "</span>" : "";    
             var vntscpuContent = data.srunning ? "<span style='color:#6A5ACD;'>" + data.vntscpu + "</span>" : "";  
             var vntsramContent = data.srunning ? "<span style='color:#0000CD;'>" + data.vntsram + "</span>" : "";
-           st.innerHTML = "<em><b>vnt-cli " + clientStatus + "&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntstaContent + "&nbsp;&nbsp<br>CPU占用：" + vntcpuContent + "&nbsp;&nbsp;内存占用：" + vntramContent + "</b></em><br><br><em><b>vnts " + serverStatus + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntsta2Content + "&nbsp;&nbsp<br>CPU占用：" + vntscpuContent + "&nbsp;&nbsp;内存占用：" + vntsramContent + "</b></em>";          
+            var vnttagContent = data.crunning ? "<span style='color:#CD853F;'>" + data.vnttag + "</span>" : ""; 
+            var vntnewtagContent = data.srunning ? "<span style='color:#FFA500;'>" + data.vntnewtag + "</span>" : "";    
+            var vntstagContent = data.srunning ? "<span style='color:#CD853F;'>" + data.vntstag + "</span>" : "";  
+            var vntsnewtagContent = data.srunning ? "<span style='color:#FFA500;'>" + data.vntsnewtag + "</span>" : "";
+            st.innerHTML = "<em><b>vnt-cli " + clientStatus + "&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntstaContent + "&nbsp;&nbsp<br>CPU占用：" + vntcpuContent + "&nbsp;&nbsp;内存占用：" + vntramContent + "&nbsp;&nbsp<br>当前版本：" + vnttagContent + "&nbsp;最新版本：" + vntnewtagContent + "</b></em><br><br><em><b>vnts " + serverStatus + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntsta2Content + "&nbsp;&nbsp<br>CPU占用：" + vntscpuContent + "&nbsp;&nbsp;内存占用：" + vntsramContent + "&nbsp;&nbsp<br>当前版本：" + vntstagContent + "&nbsp;最新版本：" + vntsnewtagContent + "</b></em>";          
         }
     }
 );
