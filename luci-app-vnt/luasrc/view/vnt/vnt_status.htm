@@ -3,10 +3,15 @@ XHR.poll(3, '<%=url([[admin]], [[vpn]], [[vnt]], [[status]])%>', null,
     function(x, data) {
         var st = document.getElementById('vnt_status');
         if (data && st) {
-               var clientStatus = data.crunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
-                var serverStatus = data.srunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
-                st.innerHTML = "<em><b>vnt-cli  " +  clientStatus  +  " &nbsp &nbsp &nbsp vnts " + serverStatus + "</b></em>";
-          
+            var clientStatus = data.crunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
+            var serverStatus = data.srunning ? "<span style='color:green;'> 运行中</span>" : "<span style='color:red;'> 未运行</span>";
+            var vntstaContent = data.crunning ? "<span style='color:#FFB6C1;'>" + data.vntsta + "</span>" : "";    
+            var vntcpuContent = data.crunning ? "<span style='color:#6A5ACD;'>" + data.vntcpu + "</span>" : "";  
+            var vntramContent = data.crunning ? "<span style='color:#0000CD;'>" + data.vntram + "</span>" : ""; 
+            var vntsta2Content = data.srunning ? "<span style='color:#FFB6C1;'>" + data.vntsta2 + "</span>" : "";    
+            var vntscpuContent = data.srunning ? "<span style='color:#6A5ACD;'>" + data.vntscpu + "</span>" : "";  
+            var vntsramContent = data.srunning ? "<span style='color:#0000CD;'>" + data.vntsram + "</span>" : "";
+           st.innerHTML = "<em><b>vnt-cli " + clientStatus + "&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntstaContent + "&nbsp;&nbsp<br>CPU占用：" + vntcpuContent + "&nbsp;&nbsp;内存占用：" + vntramContent + "</b></em><br><br><em><b>vnts " + serverStatus + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;已运行：" + vntsta2Content + "&nbsp;&nbsp<br>CPU占用：" + vntscpuContent + "&nbsp;&nbsp;内存占用：" + vntsramContent + "</b></em>";          
         }
     }
 );
