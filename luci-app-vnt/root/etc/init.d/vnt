@@ -402,6 +402,7 @@ stop_cli() {
                 iptables -D INPUT -i vnt-tun -j ACCEPT 2>"/dev/null"
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /log/vnt-cli*.log
+                rm -rf /tmp/vntnew.tag /tmp/vnt.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnt-cli.log
 }
 stop_vnts() {
@@ -413,6 +414,7 @@ stop_vnts() {
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 rm -rf /log/vnts*.log
+                rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnts.log
 }
 
