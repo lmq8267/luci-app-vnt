@@ -21,6 +21,25 @@ function act_status()
 	local e = {}
 	e.crunning = luci.sys.call("pgrep vnt-cli >/dev/null") == 0
 	e.srunning = luci.sys.call("pgrep vnts >/dev/null") == 0
+	local command = io.popen("[ -f /tmp/vnt_time ] && start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
+	e.vntsta = command:read("*all")
+	command:close()
+        local command2 = io.popen('top -b -n1 | grep -E "$(pidof vnt-cli)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /vnt-cli/) break; else cpu=i}} END {print $cpu}\'')
+	e.vntcpu = command2:read("*all")
+	command2:close()
+        local command3 = io.popen("cat /proc/$(pidof vnt-cli | awk '{print $NF}')/status | grep -w VmRSS | awk '{printf \"%.2f MB\", $2/1024}'")
+	e.vntram = command3:read("*all")
+	command3:close()
+        local command4 = io.popen("[ -f /tmp/vnts_time ] && start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
+	e.vntsta2 = command4:read("*all")
+	command4:close()
+        local command5 = io.popen('top -b -n1 | grep -E "$(pidof vnts)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /vnts/) break; else cpu=i}} END {print $cpu}\'')
+	e.vntscpu = command5:read("*all")
+	command5:close()
+        local command6 = io.popen("cat /proc/$(pidof vnts | awk '{print $NF}')/status | grep -w VmRSS | awk '{printf \"%.2f MB\", $2/1024}'")
+	e.vntsram = command6:read("*all")
+	command6:close()
+
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
 end
