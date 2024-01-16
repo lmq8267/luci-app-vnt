@@ -36,19 +36,19 @@ start_vntcli() {
 		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/log/vnt-cli.log
                  mkdir -p "$path"
 case "${cpucore}" in 
-	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_mipsle
+	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_mipsle
 	;;
-	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_mips
+	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_mips
 	;;
-	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_x86_64
+	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_x86_64
 	;;
-	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_i386
+	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_i386
 	;;
-	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_arm
+	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_arm
 	;;
-	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_armv7
+	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_armv7
 	;;
-	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://liaohc.dns.army:19213/vnt-cli_aarch64
+	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_aarch64
 	;;
 esac
  chmod +x "$clibin"
