@@ -185,7 +185,7 @@ btn1info = s:taboption("infos", DummyValue, "btn1info")
 btn1info.rawhtml = true
 btn1info.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_info") or ""
-    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+    return string.format("<pre>%s</pre>", luci.xml.pcdata(content))
 end
 
 
@@ -207,7 +207,7 @@ btn2all = s:taboption("infos", DummyValue, "btn2all")
 btn2all.rawhtml = true
 btn2all.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_all") or ""
-    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+    return string.format("<pre>%s</pre>", luci.xml.pcdata(content))
 end
 
 btn3 = s:taboption("infos", Button, "btn3")
@@ -228,7 +228,7 @@ btn3list = s:taboption("infos", DummyValue, "btn3list")
 btn3list.rawhtml = true
 btn3list.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_list") or ""
-    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+    return string.format("<pre>%s</pre>", luci.xml.pcdata(content))
 end
 
 btn4 = s:taboption("infos", Button, "btn4")
@@ -249,7 +249,7 @@ btn4route = s:taboption("infos", DummyValue, "btn4route")
 btn4route.rawhtml = true
 btn4route.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_route") or ""
-    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+    return string.format("<pre>%s</pre>", luci.xml.pcdata(content))
 end
 
 
