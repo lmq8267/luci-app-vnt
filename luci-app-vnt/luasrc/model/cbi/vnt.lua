@@ -22,6 +22,7 @@ switch.rmempty = false
 token = s:taboption("general", Value, "token", translate("VPN名称"),
 	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网（这是 -k 参数）"))
 token.optional = false
+token.password = true
 token.placeholder = "abc123"
 token.datatype = "string"
 token.maxlength = 63
