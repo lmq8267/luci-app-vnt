@@ -25,12 +25,12 @@ function act_status()
         if tagfile then
         local tagcontent = tagfile:read("*all")
         tagfile:close()
-        if tagcontent and tagcontent ~= "" then
+        if tagcontent and tagcontent ~= "" and luci.fs.stat("/tmp/vnt_time") then
 	local command = io.popen("[ -s /tmp/vnt_time ] && start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
 	e.vntsta = command:read("*all")
 	command:close()
-	end
-	end
+        end
+        end
         local command2 = io.popen('test ! -z "`pidof vnt-cli`" && (top -b -n1 | grep -E "$(pidof vnt-cli)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /vnt-cli/) break; else cpu=i}} END {print $cpu}\')')
 	e.vntcpu = command2:read("*all")
 	command2:close()
@@ -41,6 +41,7 @@ function act_status()
         if stagfile then
         local stagcontent = stagfile:read("*all")
         stagfile:close()
+        if stagcontent and stagcontent ~= "" and luci.fs.stat("/tmp/vnts_time") then
         local command4 = io.popen("[ -s /tmp/vnts_time ] && start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
 	e.vntsta2 = command4:read("*all")
 	command4:close()
