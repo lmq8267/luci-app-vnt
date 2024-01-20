@@ -243,6 +243,7 @@ EOF
                 iptables -I INPUT -i vnt-tun -j ACCEPT
 		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1
                 [ ! -z "$checkip" ] && check
+                echo `date +%s` > /tmp/vnt_time
 }
 
 check () {
@@ -314,7 +315,7 @@ start_vnts() {
                     vntsbin=/tmp/vnts
                 fi
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.8版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.8.3版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
 		case "${cpucore}" in 
 	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mipsel-unknown-linux-musl-1.2.8.3.tar.gz
@@ -389,6 +390,7 @@ start_vnts() {
 	      else
 	       rm -rf /log/log4rs.yaml
 	      fi
+              echo `date +%s` > /tmp/vnts_time
 }
 
 stop_cli() {
@@ -400,6 +402,7 @@ stop_cli() {
                 iptables -D INPUT -i vnt-tun -j ACCEPT 2>"/dev/null"
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /log/vnt-cli*.log
+                rm -rf /tmp/vntnew.tag /tmp/vnt.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnt-cli.log
 }
 stop_vnts() {
@@ -411,6 +414,7 @@ stop_vnts() {
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 rm -rf /log/vnts*.log
+                rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnts.log
 }
 
