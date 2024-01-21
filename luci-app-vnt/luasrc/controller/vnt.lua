@@ -48,7 +48,7 @@ function act_status()
         os.execute("start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_output2 2>&1")
         local command_output_file2 = io.open("/tmp/command_output2", "r")
         if command_output_file2 then
-            e.vntsta = command_output_file2:read("*all")
+            e.vntsta2 = command_output_file2:read("*all")
             command_output_file2:close()
 	end
 	end
