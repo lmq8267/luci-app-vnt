@@ -26,8 +26,8 @@ function act_status()
 	local tagcontent = tagfile:read("*all")
 	tagfile:close()
 	if tagcontent and tagcontent ~= "" then
-        os.execute("start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_output 2>&1")
-        local command_output_file = io.open("/tmp/command_output", "r")
+        os.execute("start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_vnt 2>&1")
+        local command_output_file = io.open("/tmp/command_vnt", "r")
         if command_output_file then
             e.vntsta = command_output_file:read("*all")
             command_output_file:close()
@@ -45,8 +45,8 @@ function act_status()
 	local stagcontent = stagfile:read("*all")
 	stagfile:close()
 	if stagcontent and stagcontent ~= "" then
-        os.execute("start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_output2 2>&1")
-        local command_output_file2 = io.open("/tmp/command_output2", "r")
+        os.execute("start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_vnts 2>&1")
+        local command_output_file2 = io.open("/tmp/command_vnts", "r")
         if command_output_file2 then
             e.vntsta2 = command_output_file2:read("*all")
             command_output_file2:close()
