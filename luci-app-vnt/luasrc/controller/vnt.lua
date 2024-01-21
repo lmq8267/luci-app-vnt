@@ -23,14 +23,17 @@ function act_status()
 	e.srunning = luci.sys.call("pgrep vnts >/dev/null") == 0
 	local tagfile = io.open("/tmp/vnt_time", "r")
         if tagfile then
-        local tagcontent = tagfile:read("*all")
-        tagfile:close()
-        if tagcontent and tagcontent ~= "" and luci.fs.stat("/tmp/vnt_time") then
-	local command = io.popen("[ -s /tmp/vnt_time ] && start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
-	e.vntsta = command:read("*all")
-	command:close()
+	local tagcontent = tagfile:read("*all")
+	tagfile:close()
+	if tagcontent and tagcontent ~= "" then
+        os.execute("start_time=$(cat /tmp/vnt_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_output 2>&1")
+        local command_output_file = io.open("/tmp/command_output", "r")
+        if command_output_file then
+            e.vntsta = command_output_file:read("*all")
+            command_output_file:close()
         end
-        end
+	end
+	end
         local command2 = io.popen('test ! -z "`pidof vnt-cli`" && (top -b -n1 | grep -E "$(pidof vnt-cli)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /vnt-cli/) break; else cpu=i}} END {print $cpu}\')')
 	e.vntcpu = command2:read("*all")
 	command2:close()
@@ -38,15 +41,18 @@ function act_status()
 	e.vntram = command3:read("*all")
 	command3:close()
 	local stagfile = io.open("/tmp/vnts_time", "r")
-        if stagfile then
-        local stagcontent = stagfile:read("*all")
-        stagfile:close()
-        if stagcontent and stagcontent ~= "" and luci.fs.stat("/tmp/vnts_time") then
-        local command4 = io.popen("[ -s /tmp/vnts_time ] && start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time")
-	e.vntsta2 = command4:read("*all")
-	command4:close()
+	if stagfile then
+	local stagcontent = stagfile:read("*all")
+	stagfile:close()
+	if stagcontent and stagcontent ~= "" then
+        os.execute("start_time=$(cat /tmp/vnts_time) && time=$(($(date +%s)-start_time)) && day=$((time/86400)) && [ $day -eq 0 ] && day='' || day=${day}天 && time=$(date -u -d @${time} +'%H小时%M分%S秒') && echo $day $time > /tmp/command_output2 2>&1")
+        local command_output_file2 = io.open("/tmp/command_output2", "r")
+        if command_output_file2 then
+            e.vntsta = command_output_file2:read("*all")
+            command_output_file2:close()
 	end
-        end
+	end
+	end
         local command5 = io.popen('test ! -z "`pidof vnts`" && (top -b -n1 | grep -E "$(pidof vnts)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /vnts/) break; else cpu=i}} END {print $cpu}\')')
 	e.vntscpu = command5:read("*all")
 	command5:close()
@@ -59,7 +65,7 @@ function act_status()
         local command8 = io.popen("([ -s /tmp/vntnew.tag ] && cat /tmp/vntnew.tag ) || ( curl -L -k -s --connect-timeout 3 --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' https://api.github.com/repos/lbl8603/vnt/releases/latest | grep tag_name | sed 's/[^0-9.]*//g' >/tmp/vntnew.tag && cat /tmp/vntnew.tag )")
 	e.vntnewtag = command8:read("*all")
 	command8:close()
-        local command9 = io.popen("([ -s /tmp/vnts.tag ] && cat /tmp/vnts.tag ) || ( echo `$(uci -q get vnt.@vnts[0].vntsbin) -V | sed 's/[^0-9.]*//g'` > /tmp/vnts.tag && cat /tmp/vnts.tag && [ -s /tmp/vnts.tag ] && echo '？' >> /tmp/vnts.tag && cat /tmp/vnts.tag )")
+        local command9 = io.popen("([ -s /tmp/vnts.tag ] && cat /tmp/vnts.tag ) || ( echo `$(uci -q get vnt.@vnts[0].vntsbin) -V | sed 's/[^0-9.]*//g'` > /tmp/vnts.tag && cat /tmp/vnts.tag && [ ! -s /tmp/vnts.tag ] && echo '？' >> /tmp/vnts.tag && cat /tmp/vnts.tag )")
 	e.vntstag = command9:read("*all")
 	command9:close()
         local command0 = io.popen("([ -s /tmp/vntsnew.tag ] && cat /tmp/vntsnew.tag ) || ( curl -L -k -s --connect-timeout 3 --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' https://api.github.com/repos/lbl8603/vnts/releases/latest | grep tag_name | sed 's/[^0-9.]*//g' >/tmp/vntsnew.tag ; cat /tmp/vntsnew.tag )")
