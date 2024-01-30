@@ -253,6 +253,24 @@ btn4route.cfgvalue = function(self, section)
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
+btn5 = s:taboption("infos", Button, "btn5")
+btn5.inputtitle = translate("本机启动参数")
+btn5.description = translate("点击按钮刷新，查看本机完整启动参数")
+btn5.inputstyle = "apply"
+btn5.write = function()
+if process_status ~= "" then
+    luci.sys.call("echo $(cat /proc/$(pidof vnt-cli)/cmdline | awk '{print $1}') >/tmp/vnt-cli_cmd")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_cmd")
+end
+end
+
+btn5cmd = s:taboption("infos", DummyValue, "btn5cmd")
+btn5cmd.rawhtml = true
+btn5cmd.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnt-cli_cmd") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
 
 local upload = s:taboption("upload", FileUpload, "upload_file")
 upload.optional = true
@@ -364,6 +382,28 @@ private_key.cfgvalue = function(self, section)
 end
 private_key.write = function(self, section, value)
     fs.writefile("/key/private_key.pem", value:gsub("\r\n", "\n"))
+end
+
+local vnts_status = luci.sys.exec("ps | grep vnts | grep -v grep")
+btn6 = s:taboption("pri", Button, "btn6")
+btn6.inputtitle = translate("本机启动参数")
+btn6.description = translate("点击按钮刷新，查看本机完整启动参数")
+btn6.inputstyle = "apply"
+btn6:depends("enabled", "1")
+btn6.write = function()
+if vnts_status ~= "" then
+   luci.sys.call("echo $(cat /proc/$(pidof vnts)/cmdline | awk '{print $1}') >/tmp/vnts_cmd")
+else
+    luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnts_cmd")
+end
+end
+
+btn6cmd = s:taboption("pri", DummyValue, "btn6cmd")
+btn6cmd.rawhtml = true
+btn6cmd:depends("enabled", "1")
+btn6cmd.cfgvalue = function(self, section)
+    local content = nixio.fs.readfile("/tmp/vnts_cmd") or ""
+    return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
 return m
