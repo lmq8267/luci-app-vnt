@@ -15,6 +15,11 @@ function index()
 	entry({"admin", "vpn", "vnt", "get_log2"}, call("get_log2")).leaf = true
 	entry({"admin", "vpn", "vnt", "clear_log2"}, call("clear_log2")).leaf = true
 	entry({"admin", "vpn", "vnt", "status"}, call("act_status")).leaf = true
+	entry({"admin", "vpn", "vnt", "vnt_info"}, call("vnt_info")).leaf = true
+        entry({"admin", "vpn", "vnt", "vnt_all"}, call("vnt_all")).leaf = true
+        entry({"admin", "vpn", "vnt", "vnt_list"}, call("vnt_list")).leaf = true
+        entry({"admin", "vpn", "vnt", "vnt_route"}, call("vnt_route")).leaf = true
+        entry({"admin", "vpn", "vnt", "vnt_cmd"}, call("vnt_cmd")).leaf = true
 end
 
 function act_status()
@@ -104,4 +109,130 @@ end
 
 function clear_log2()
 	luci.sys.call("rm -rf /log/vnts*.log")
+end
+
+function vnt_info()
+  os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+  os.execute("rm -rf /tmp/vnt-cli_info")
+  local info = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --info 2>&1")
+  info = info:gsub("Connection status:", "连接状态：")
+  info = info:gsub("Virtual ip:", "虚拟IP：")
+  info = info:gsub("Virtual gateway:", "虚拟网关：")
+  info = info:gsub("Virtual netmask:", "虚拟网络掩码：")
+  info = info:gsub("NAT type:", "NAT类型：")
+  info = info:gsub("Relay server:", "服务器地址：")
+  info = info:gsub("Public ips:", "外网IP：")
+  info = info:gsub("Local addr:", "WAN口IP：")
+
+  luci.http.prepare_content("application/json")
+  luci.http.write_json({ info = info })
+end
+
+function vnt_all()
+  os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+  os.execute("rm -rf /tmp/vnt-cli_all")
+  local all = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --all 2>&1")
+  all = all:gsub("Virtual Ip", "虚拟IP")
+  all = all:gsub("NAT Type", "NAT类型")
+  all = all:gsub("Public Ips", "外网IP")
+  all = all:gsub("Local Ip", "WAN口IP")
+  local rows = {} 
+  for line in all:gmatch("[^\r\n]+") do
+    local cols = {} 
+    for col in line:gmatch("%S+") do
+      table.insert(cols, col)
+    end
+    table.insert(rows, cols) 
+  end
+
+ local html_table = "<table>"
+for i, row in ipairs(rows) do
+  html_table = html_table .. "<tr>"
+  for j, col in ipairs(row) do
+ 
+    local colors = {"#FFA500", "#800000", "#0000FF", "#3CB371", "#00BFFF", "#DAA520", "#48D1CC", "#6600CC", "#2F4F4F"}
+    local color = colors[(j % 9) + 1] 
+    html_table = html_table .. "<td><font color='" .. color .. "'>" .. col .. "</font></td>"
+  end
+  html_table = html_table .. "</tr>"
+end
+html_all = html_table .. "</table>"
+
+  luci.http.prepare_content("application/json")
+  luci.http.write_json({ all = html_all })
+end
+
+function vnt_route()
+ os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+ os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+ os.execute("rm -rf /tmp/vnt-cli_route")
+  local route = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --route 2>&1")
+  route = route:gsub("Next Hop", "下一跳地址")
+  route = route:gsub("Interface", "连接地址")
+  local rows = {} 
+  for line in route:gmatch("[^\r\n]+") do
+    local cols = {} 
+    for col in line:gmatch("%S+") do
+      table.insert(cols, col)
+    end
+    table.insert(rows, cols) 
+  end
+
+ local html_table = "<table>"
+for i, row in ipairs(rows) do
+  html_table = html_table .. "<tr>"
+  for j, col in ipairs(row) do
+ 
+    local colors = {"#FFA500", "#800000", "#0000FF", "#3CB371", "#00BFFF"}
+    local color = colors[(j % 5) + 1] 
+    html_table = html_table .. "<td><font color='" .. color .. "'>" .. col .. "</font></td>"
+  end
+  html_table = html_table .. "</tr>"
+end
+html_route = html_table .. "</table>"
+
+  luci.http.prepare_content("application/json")
+  luci.http.write_json({ route = html_route })
+end
+
+function vnt_list()
+ os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+ os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
+ os.execute("rm -rf /tmp/vnt-cli_list")
+  local list = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --list 2>&1")
+  list = list:gsub("Virtual Ip", "虚拟IP")
+  local rows = {} 
+  for line in list:gmatch("[^\r\n]+") do
+    local cols = {} 
+    for col in line:gmatch("%S+") do
+      table.insert(cols, col)
+    end
+    table.insert(rows, cols) 
+  end
+
+ local html_table = "<table>"
+for i, row in ipairs(rows) do
+  html_table = html_table .. "<tr>"
+  for j, col in ipairs(row) do
+ 
+    local colors = {"#FFA500", "#800000", "#0000FF", "#3CB371", "#00BFFF"} 
+    local color = colors[(j % 5) + 1] 
+    html_table = html_table .. "<td><font color='" .. color .. "'>" .. col .. "</font></td>"
+  end
+  html_table = html_table .. "</tr>"
+end
+html_table = html_table .. "</table>"
+
+  luci.http.prepare_content("application/json")
+  luci.http.write_json({ list = html_table })
+end
+
+function vnt_cmd()
+  os.execute("rm -rf /tmp/vnt*_cmd")
+  local html_cmd= luci.sys.exec("echo $(cat /proc/$(pidof vnt-cli)/cmdline | awk '{print $1}') 2>&1")
+  html_cmd = html_cmd:gsub("--no", "-不")
+  luci.http.prepare_content("application/json")
+  luci.http.write_json({ cmd = html_cmd })
 end
