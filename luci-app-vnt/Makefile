@@ -49,6 +49,9 @@ chmod +x /etc/init.d/vnt
 if [ -f /tmp/vnt_backup ] ; then
   echo "将备份的配置文件/tmp/vnt_backup还原到/etc/config/vnt"
   mv -f /tmp/vnt_backup /etc/config/vnt
+  uci -q set vnt.@vnt-cli[0].enabled=0
+  uci -q set vnt.@vnts[0].enabled=0
+  uci commit vnt
 fi
 endef
 
