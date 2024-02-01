@@ -167,11 +167,31 @@ checktime:value(s)
 end
 checktime:depends("check", "1")
 
+cmdmode = s:taboption("infos",ListValue, "cmdmode", translate(""))
+cmdmode:value("原版")
+cmdmode:value("表格式")
+
+btnrm = s:taboption("infos", Button, "btnrm")
+btnrm.inputtitle = translate("检测更新")
+btnrm.description = translate("点击按钮开始检测更新，上方状态栏显示")
+btnrm.inputstyle = "apply"
+btnrm:depends("cmdmode", "原版")
+btnrm.write = function()
+  os.execute("rm -rf /tmp/vnt*.tag /tmp/vnt*.newtag")
+end
+
 local process_status = luci.sys.exec("ps | grep vnt-cli | grep -v grep")
+
+vnt_info = s:taboption("infos", Button, "vnt_info" )
+vnt_info.rawhtml = true
+vnt_info:depends("cmdmode", "表格式")
+vnt_info.template = "vnt/vnt_info"
+
 btn1 = s:taboption("infos", Button, "btn1")
 btn1.inputtitle = translate("本机设备信息")
 btn1.description = translate("点击按钮刷新，查看当前设备信息")
 btn1.inputstyle = "apply"
+btn1:depends("cmdmode", "原版")
 btn1.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
@@ -184,16 +204,22 @@ end
 
 btn1info = s:taboption("infos", DummyValue, "btn1info")
 btn1info.rawhtml = true
+btn1info:depends("cmdmode", "原版")
 btn1info.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_info") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
+vnt_all = s:taboption("infos", Button, "vnt_all" )
+vnt_all.rawhtml = true
+vnt_all:depends("cmdmode", "表格式")
+vnt_all.template = "vnt/vnt_all"
 
 btn2 = s:taboption("infos", Button, "btn2")
 btn2.inputtitle = translate("所有设备信息")
 btn2.description = translate("点击按钮刷新，查看所有设备详细信息")
 btn2.inputstyle = "apply"
+btn2:depends("cmdmode", "原版")
 btn2.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")  
@@ -206,15 +232,22 @@ end
 
 btn2all = s:taboption("infos", DummyValue, "btn2all")
 btn2all.rawhtml = true
+btn2all:depends("cmdmode", "原版")
 btn2all.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_all") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
+vnt_list = s:taboption("infos", Button, "vnt_list" )
+vnt_list.rawhtml = true
+vnt_list:depends("cmdmode", "表格式")
+vnt_list.template = "vnt/vnt_list"
+
 btn3 = s:taboption("infos", Button, "btn3")
 btn3.inputtitle = translate("所有设备列表")
 btn3.description = translate("点击按钮刷新，查看所有设备列表")
 btn3.inputstyle = "apply"
+btn3:depends("cmdmode", "原版")
 btn3.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
@@ -227,15 +260,22 @@ end
 
 btn3list = s:taboption("infos", DummyValue, "btn3list")
 btn3list.rawhtml = true
+btn3list:depends("cmdmode", "原版")
 btn3list.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_list") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
+vnt_route = s:taboption("infos", Button, "vnt_route" )
+vnt_route.rawhtml = true
+vnt_route:depends("cmdmode", "表格式")
+vnt_route.template = "vnt/vnt_route"
+
 btn4 = s:taboption("infos", Button, "btn4")
 btn4.inputtitle = translate("路由转发信息")
 btn4.description = translate("点击按钮刷新，查看本机路由转发路径")
 btn4.inputstyle = "apply"
+btn4:depends("cmdmode", "原版")
 btn4.write = function()
 if process_status ~= "" then
     luci.sys.call("mkdir -p /root/.vnt-cli")
@@ -248,15 +288,22 @@ end
 
 btn4route = s:taboption("infos", DummyValue, "btn4route")
 btn4route.rawhtml = true
+btn4route:depends("cmdmode", "原版")
 btn4route.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_route") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
 end
 
+vnt_cmd = s:taboption("infos", Button, "vnt_cmd" )
+vnt_cmd.rawhtml = true
+vnt_cmd:depends("cmdmode", "表格式")
+vnt_cmd.template = "vnt/vnt_cmd"
+
 btn5 = s:taboption("infos", Button, "btn5")
 btn5.inputtitle = translate("本机启动参数")
 btn5.description = translate("点击按钮刷新，查看本机完整启动参数")
 btn5.inputstyle = "apply"
+btn5:depends("cmdmode", "原版")
 btn5.write = function()
 if process_status ~= "" then
     luci.sys.call("echo $(cat /proc/$(pidof vnt-cli)/cmdline | awk '{print $1}') >/tmp/vnt-cli_cmd")
@@ -267,6 +314,7 @@ end
 
 btn5cmd = s:taboption("infos", DummyValue, "btn5cmd")
 btn5cmd.rawhtml = true
+btn5cmd:depends("cmdmode", "原版")
 btn5cmd.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_cmd") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
