@@ -21,6 +21,7 @@
                    .replace(/WAN口IP/g, "<font color='#0000FF'><em><b><br>WAN口IP</em></b></font>")
                    .replace(/IPv6:/g, "<font color='#0000FF'><em><b><br>IPv6地址：</em></b></font>")
                    .replace(/Connected/g, "<font color='#00CC00'>已连接</font>")
+                   .replace(/Connecting/g, "<font color='#00CC00'>正在连接</font>")
                    .replace(/Cone/g, "<font color='#33B728'>NAT 1</font>");
   tb.innerHTML = "<br><font color='#FF00FF'>&nbsp;&nbsp;&nbsp;<b><%:vnt-cli --info %></b></font><br>" + "<font color='#FF4500'>" + rv.info + "</font>";
 }
