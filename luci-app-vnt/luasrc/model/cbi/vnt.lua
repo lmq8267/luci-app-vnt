@@ -171,15 +171,6 @@ cmdmode = s:taboption("infos",ListValue, "cmdmode", translate(""))
 cmdmode:value("原版")
 cmdmode:value("表格式")
 
-btnrm = s:taboption("infos", Button, "btnrm")
-btnrm.inputtitle = translate("检测更新")
-btnrm.description = translate("点击按钮开始检测更新，上方状态栏显示")
-btnrm.inputstyle = "apply"
-btnrm:depends("cmdmode", "原版")
-btnrm.write = function()
-  os.execute("rm -rf /tmp/vnt*.tag /tmp/vnt*.newtag")
-end
-
 local process_status = luci.sys.exec("ps | grep vnt-cli | grep -v grep")
 
 vnt_info = s:taboption("infos", Button, "vnt_info" )
@@ -318,6 +309,15 @@ btn5cmd:depends("cmdmode", "原版")
 btn5cmd.cfgvalue = function(self, section)
     local content = nixio.fs.readfile("/tmp/vnt-cli_cmd") or ""
     return string.format("<pre>%s</pre>", luci.util.pcdata(content))
+end
+
+btnrm = s:taboption("infos", Button, "btnrm")
+btnrm.inputtitle = translate("检测更新")
+btnrm.description = translate("点击按钮开始检测更新，上方状态栏显示")
+btnrm.inputstyle = "apply"
+btnrm:depends("cmdmode", "原版")
+btnrm.write = function()
+  os.execute("rm -rf /tmp/vnt*.tag /tmp/vnt*.newtag")
 end
 
 local upload = s:taboption("upload", FileUpload, "upload_file")
