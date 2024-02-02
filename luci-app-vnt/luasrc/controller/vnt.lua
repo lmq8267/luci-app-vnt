@@ -112,7 +112,7 @@ function clear_log2()
 end
 
 function vnt_info()
-  os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+  os.execute("mkdir -p /root/.vnt-cli")
   os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
   os.execute("rm -rf /tmp/vnt-cli_info")
   local info = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --info 2>&1")
@@ -130,7 +130,7 @@ function vnt_info()
 end
 
 function vnt_all()
-  os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+  os.execute("mkdir -p /root/.vnt-cli")
   os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
   os.execute("rm -rf /tmp/vnt-cli_all")
   local all = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --all 2>&1")
@@ -165,7 +165,7 @@ html_all = html_table .. "</table>"
 end
 
 function vnt_route()
- os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+ os.execute("mkdir -p /root/.vnt-cli")
  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
  os.execute("rm -rf /tmp/vnt-cli_route")
   local route = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --route 2>&1")
@@ -198,7 +198,7 @@ html_route = html_table .. "</table>"
 end
 
 function vnt_list()
- os.execute("mkdir -p /tmp/tmp/wrtbwmon/vnt")
+ os.execute("mkdir -p /root/.vnt-cli")
  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
  os.execute("rm -rf /tmp/vnt-cli_list")
   local list = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --list 2>&1")
