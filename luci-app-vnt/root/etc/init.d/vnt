@@ -35,23 +35,8 @@ start_vntcli() {
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
 		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/log/vnt-cli.log
                  mkdir -p "$path"
-case "${cpucore}" in 
-	"mipsle")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_mipsle
-	;;
-	"mips")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_mips
-	;;
-	"x86_64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_x86_64
-	;;
-	"i386")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_i386
-	;;
-	"arm")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_arm
-	;;
-	"armv7")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_armv7
-	;;
-	"aarch64")  curl -o "${clibin}" --connect-timeout 10 --retry 3 http://webd.liaoh.dedyn.io:19213/vnt-cli_aarch64
-	;;
-esac
- chmod +x "$clibin"
+	         curl -o "${clibin}" --connect-timeout 10 --retry 3 "http://webd.liaoh.dedyn.io:19213/vnt-cli_${cpucore}"
+                 chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin} 下载成功" >>/log/vnt-cli.log
  else
@@ -317,20 +302,21 @@ start_vnts() {
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
 		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.8.3版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
+                proxy_url="https://hub.gitmirror.com/"
 		case "${cpucore}" in 
-	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mipsel-unknown-linux-musl-1.2.8.3.tar.gz
+	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mipsel-unknown-linux-musl-1.2.8.3.tar.gz"
 	           ;;
-	           "mips")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mips-unknown-linux-musl-1.2.8.3.tar.gz
+	           "mips")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-mips-unknown-linux-musl-1.2.8.3.tar.gz"
 	           ;;
-	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-x86_64-unknown-linux-gnu-1.2.8.3.tar.gz
+	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-x86_64-unknown-linux-gnu-1.2.8.3.tar.gz"
 	           ;;
-	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-i686-unknown-linux-musl-1.2.8.3.tar.gz
+	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-i686-unknown-linux-musl-1.2.8.3.tar.gz"
 	           ;;
-	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-arm-unknown-linux-gnueabihf-1.2.8.3.tar.gz
+	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-arm-unknown-linux-gnueabihf-1.2.8.3.tar.gz"
 	           ;;
-	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-armv7-unknown-linux-gnueabihf-1.2.8.3.tar.gz
+	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-armv7-unknown-linux-gnueabihf-1.2.8.3.tar.gz"
 	           ;;
-	           "aarch64")  curl -L -k -o/tmp/vnts.tar.gz --connect-timeout 10 --retry 3 https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-aarch64-unknown-linux-gnu-1.2.8.3.tar.gz
+	           "aarch64")  curl -L -k -o/tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.8.3/vnts-aarch64-unknown-linux-gnu-1.2.8.3.tar.gz"
 	           ;;
                    esac
                    tar zxf /tmp/vnts.tar.gz -C /tmp/
