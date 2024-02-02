@@ -37,8 +37,12 @@ if [ -z "`opkg list-installed|grep luci-compat`" ] ; then
   opkg update
   opkg install luci-compat
 fi
+endef
+
+define Package/$(PKG_NAME)/prerm
+#!/bin/sh
 if [ -f /etc/config/vnt ] ; then
-  echo "发现vnt配置文件/etc/config/vnt，备份到/tmp/vnt_backup"
+  echo "备份vnt配置文件/etc/config/vnt到/tmp/vnt_backup"
   mv -f /etc/config/vnt /tmp/vnt_backup
 fi
 endef
@@ -47,11 +51,11 @@ define Package/$(PKG_NAME)/postinst
 #!/bin/sh
 chmod +x /etc/init.d/vnt
 if [ -f /tmp/vnt_backup ] ; then
-  echo "将备份的配置文件/tmp/vnt_backup还原到/etc/config/vnt"
+  echo "发现备份的配置文件/tmp/vnt_backup还原到/etc/config/vnt"
   mv -f /tmp/vnt_backup /etc/config/vnt
-  uci -q set vnt.@vnt-cli[0].enabled=0
-  uci -q set vnt.@vnts[0].enabled=0
-  uci commit vnt
+  if [ "$(uci -q set vnt.@vnt-cli[0].enabled)" = "1" ] || [ "$(uci -q set vnt.@vnts[0].enabled)" = "1" ] ; then
+     /etc/init.d/vnt restart &
+  fi
 fi
 endef
 
