@@ -369,6 +369,8 @@ start_vnts() {
 
 		iptables -I INPUT -p udp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
                 iptables -I INPUT -p tcp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
+                ip6tables -I INPUT -p udp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
+                ip6tables -I INPUT -p tcp --dport $server_port -j ACCEPT -m comment --comment 'vnt vnts'
 	        [ "$(uci -q get vnt.@vnts[0].logs)" = "0" ] && rm -rf /log/vnts*.log /log/log4rs.yaml
 	      if [ "$logs" = "1" ] ;then
 	       sed -i 's|limit: 10 mb|limit: 1 mb|g' /log/log4rs.yaml
@@ -399,6 +401,8 @@ stop_vnts() {
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
+                ip6tables -D INPUT -p udp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
+                ip6tables -D INPUT -p tcp --dport "$server_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
                 rm -rf /log/vnts*.log
                 rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnts.log
