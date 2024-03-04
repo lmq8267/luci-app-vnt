@@ -212,7 +212,7 @@ EOF
 		[ "$finger" = "0" ] || procd_append_param command --finger
 		[ "$multicast" = "0" ] || procd_append_param command -m
 		[ "$serverw" = "0" ] || procd_append_param command -W
-		[ "$first_latency" = "0" ] || procd_append_param command --first_latency
+		[ "$first_latency" = "0" ] || procd_append_param command --first-latency
                 [ "$relay" = "0" ] || procd_append_param command --relay
 
 		procd_set_param limits core="unlimited"
