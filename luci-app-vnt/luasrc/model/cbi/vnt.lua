@@ -81,6 +81,7 @@ clibin.placeholder = "/tmp/vnt-cli"
 vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地址"),
 	translate("相同的服务器，相同VPN名称的设备才会组成一个局域网"))
 vntshost.placeholder = "域名:端口"
+vntshost.password = true
 
 stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务器地址"),
 	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，已内置谷歌 QQ 可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
