@@ -83,7 +83,7 @@ end
 
 function get_log()
     local log = ""
-    local files = {"/log/vnt-cli.log", "/log/vnt-cli.1.log", "/log/vnt-cli.2.log", "/log/vnt-cli.3.log", "/log/vnt-cli.4.log", "/log/vnt-cli.5.log"}
+    local files = {"/log/vnt-cli.log"}
     for i, file in ipairs(files) do
         if luci.sys.call("[ -f '" .. file .. "' ]") == 0 then
             log = log .. luci.sys.exec("cat " .. file)
@@ -98,7 +98,7 @@ end
 
 function get_log2()
 	local log2 = ""
-    local files = {"/log/vnts.log", "/log/vnts.1.log", "/log/vnts.2.log", "/log/vnts.3.log", "/log/vnts.4.log", "/log/vnts.5.log"}
+    local files = {"/log/vnts.log"}
     for i, file in ipairs(files) do
         if luci.sys.call("[ -f '" .. file .. "' ]") == 0 then
             log2 = log2 .. luci.sys.exec("cat " .. file)
@@ -116,14 +116,14 @@ function vnt_info()
   os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
   os.execute("rm -rf /tmp/vnt-cli_info")
   local info = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --info 2>&1")
-  info = info:gsub("Connection status:", "连接状态：")
-  info = info:gsub("Virtual ip:", "虚拟IP：")
-  info = info:gsub("Virtual gateway:", "虚拟网关：")
-  info = info:gsub("Virtual netmask:", "虚拟网络掩码：")
-  info = info:gsub("NAT type:", "NAT类型：")
-  info = info:gsub("Relay server:", "服务器地址：")
-  info = info:gsub("Public ips:", "外网IP：")
-  info = info:gsub("Local addr:", "WAN口IP：")
+  info = info:gsub("Connection status", "连接状态")
+  info = info:gsub("Virtual ip", "虚拟IP")
+  info = info:gsub("Virtual gateway", "虚拟网关")
+  info = info:gsub("Virtual netmask", "虚拟网络掩码")
+  info = info:gsub("NAT type", "NAT类型")
+  info = info:gsub("Relay server", "服务器地址")
+  info = info:gsub("Public ips", "外网IP")
+  info = info:gsub("Local addr", "WAN口IP")
 
   luci.http.prepare_content("application/json")
   luci.http.write_json({ info = info })
@@ -233,6 +233,9 @@ function vnt_cmd()
   os.execute("rm -rf /tmp/vnt*_cmd")
   local html_cmd= luci.sys.exec("echo $(cat /proc/$(pidof vnt-cli)/cmdline | awk '{print $1}') 2>&1")
   html_cmd = html_cmd:gsub("--no", "-不")
+  html_cmd = html_cmd:gsub("--nic", "网卡名")
+  html_cmd = html_cmd:gsub("--use", "直连")
+  html_cmd = html_cmd:gsub("-channel", "方式")
   luci.http.prepare_content("application/json")
   luci.http.write_json({ cmd = html_cmd })
 end
