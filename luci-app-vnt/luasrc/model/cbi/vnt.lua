@@ -154,10 +154,6 @@ first_latency = s:taboption("privacy",Flag, "first_latency", translate("启用�
 	translate("启用后优先使用低延迟通道，默认情况下优先使用p2p通道，某些情况下可能p2p比客户端中继延迟更高，可启用此参数进行优化传输"))
 first_latency.rmempty = false
 
-multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组播"),
-	translate("自1.2.9版本起此功能已取消，不要勾选<br>模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。<br>1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。<br>2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
-multicast.rmempty = false
-
 check = s:taboption("privacy",Flag, "check", translate("通断检测"),
         translate("开启通断检测后，可以指定对端的设备IP，当所有指定的IP都ping不通时将会重启vnt程序"))
 
