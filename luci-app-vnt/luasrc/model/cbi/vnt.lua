@@ -111,6 +111,10 @@ relay:value("自动")
 relay:value("转发")
 relay:value("P2P")
 
+client_port = s:taboption("privacy", Value, "client_port", translate("本地监听端口"),
+	translate("取值0~65535，指定本地监听的端口组，多个端口使用英文逗号分隔,多个端口可以分摊流量，增加并发，tcp会监听端口组的第一个端口，用于tcp直连<br>例1：‘12345,12346,12347’ 表示udp监听12345、12346、12347这三个端口，tcp监听12345端口<br>例2：‘0,0’ 表示udp监听两个未使用的端口，tcp监听一个未使用的端口"))
+client_port.placeholder = "0,0"
+
 mtu = s:taboption("privacy",Value, "mtu", translate("MTU"),
 	translate("设置虚拟网卡的mtu值，大多数情况下（留空）使用默认值效率会更高，也可根据实际情况进行微调，默认值：不加密1450，加密1410"))
 mtu.datatype = "range(1,1500)"
@@ -137,11 +141,6 @@ passmode:value("aes_gcm")
 key = s:taboption("privacy",Value, "key", translate("加密密钥"),
 	translate("先开启上方的加密模式再填写密钥才能生效，使用相同密钥的客户端才能通信，服务端无法解密(包括中继转发数据)"))
 key.placeholder = "wodemima"
-
-client_port = s:taboption("privacy", Value, "client_port", translate("本地监听端口"),
-	translate("取值0~65535，指定本地监听的端口组，多个端口使用英文逗号分隔,多个端口可以分摊流量，增加并发，tcp会监听端口组的第一个端口，用于tcp直连<br>例1：‘12345,12346,12347’ 表示udp监听12345、12346、12347这三个端口，tcp监听12345端口<br>例2：‘0,0’ 表示udp监听两个未使用的端口，tcp监听一个未使用的端口"))
-client_port.datatype = "port"
-client_port.placeholder = "0,0"
 
 serverw = s:taboption("privacy",Flag, "serverw", translate("启用服务端客户端加密"),
 	translate("用服务端通信的数据加密，采用rsa+aes256gcm加密客户端和服务端之间通信的数据，可以避免token泄漏、中间人攻击，<br>上面的加密模式是客户端与客户端之间加密，这是服务器和客户端之间的加密，不是一个性质，无需选择加密模式"))
