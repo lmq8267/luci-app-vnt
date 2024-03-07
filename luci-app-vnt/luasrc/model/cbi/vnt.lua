@@ -141,6 +141,10 @@ passmode:value("aes_gcm")
 key = s:taboption("privacy",Value, "key", translate("加密密钥"),
 	translate("先开启上方的加密模式再填写密钥才能生效，使用相同密钥的客户端才能通信，服务端无法解密(包括中继转发数据)"))
 key.placeholder = "wodemima"
+key:depends("passmode", "aes_ecb")
+key:depends("passmode", "sm4_cbc")
+key:depends("passmode", "sm4_cbc")
+key:depends("passmode", "aes_gcm")
 
 serverw = s:taboption("privacy",Flag, "serverw", translate("启用服务端客户端加密"),
 	translate("用服务端通信的数据加密，采用rsa+aes256gcm加密客户端和服务端之间通信的数据，可以避免token泄漏、中间人攻击，<br>上面的加密模式是客户端与客户端之间加密，这是服务器和客户端之间的加密，不是一个性质，无需选择加密模式"))
