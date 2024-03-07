@@ -55,7 +55,7 @@ start_vntcli() {
 		local token mode ipaddr mtu desvice_id localadd log
 		local peeradd desvice_name vntshost stunhost checkip
 		local punch client_port par key forward serverw 
-		local finger relay first_latency multicast tunmode tcp passmode
+		local finger relay first_latency tunname tunmode tcp passmode
 		config_get token "$cfg" 'token'
                 config_get desvice_id "$cfg" 'desvice_id'
                 config_get desvice_name "$cfg" 'desvice_name'
@@ -122,13 +122,13 @@ fi
 		config_get ipaddr "$cfg" 'ipaddr'
 		config_get mtu "$cfg" 'mtu'
 		config_get tunmode "$cfg" 'tunmode'
+		config_get tunname "$cfg" 'tunname'
 		config_get key "$cfg" 'key'
-		config_get_bool relay "$cfg" 'relay' '0'
+		config_get relay "$cfg" 'relay'
 		config_get_bool serverw "$cfg" 'serverw' '0'
 		config_get tcp "$cfg" 'tcp'
 		config_get_bool forward "$cfg" 'forward' '0'
 		config_get_bool finger "$cfg" 'finger' '0'
-		config_get_bool multicast "$cfg" 'multicast' '0'
 		config_get_bool first_latency "$cfg" 'first_latency' '0'
                 config_get_bool log "$cfg" 'log' '0'
                 config_get checkip "$cfg" 'checkip'
@@ -174,7 +174,7 @@ EOF
 		[ -z "$desvice_id" ] || procd_append_param command -d "$desvice_id"
 		[ -z "$desvice_name" ] || procd_append_param command -n "$desvice_name"
 		[ -z "$vntshost" ] || procd_append_param command -s "$vntshost"
-		[ -z "$client_port" ] || procd_append_param command --port "$client_port"
+		[ -z "$client_port" ] || procd_append_param command --ports "$client_port"
 		if [ ! -z "$peeradd" ] ; then
                   if [[ "$(grep "list peeradd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                     procd_append_param command -i "$peeradd"
@@ -205,6 +205,7 @@ EOF
                    fi
                 fi
 		[ -z "$par" ] || procd_append_param command --par "$par"
+		[ -z "$tunname" ] || procd_append_param command --nic "$tunname"
 		[ "$punch" = "ipv4/ipv6" ] || procd_append_param command --punch "$punch"
 		[ "$passmode" != "off" ] && [ -n "$key" ] && procd_append_param command --model "$passmode"
 		[ "$passmode" != "off" ] && [ -n "$key" ] && procd_append_param command -w "$key"
@@ -212,10 +213,10 @@ EOF
 		[ "$tcp" = "udp" ] || procd_append_param command --tcp
 		[ "$forward" = "0" ] || procd_append_param command --no-proxy
 		[ "$finger" = "0" ] || procd_append_param command --finger
-		[ "$multicast" = "0" ] || procd_append_param command -m
 		[ "$serverw" = "0" ] || procd_append_param command -W
 		[ "$first_latency" = "0" ] || procd_append_param command --first-latency
-                [ "$relay" = "0" ] || procd_append_param command --relay
+                [ "$relay" = "转发" ] || procd_append_param command --use-channel relay
+                [ "$relay" = "P2P" ] || procd_append_param command --use-channel p2p
 
 		procd_set_param limits core="unlimited"
 		procd_set_param limits nofile="1000000 1000000"
@@ -224,11 +225,15 @@ EOF
 		procd_set_param respawn
 		procd_close_instance
 
+                if [ -z "$tunname" ] ; then
+                   [ "$tunmode" = "tun" ] && vnt_tun="vnt-tun"
+                   [ "$tunmode" = "tap" ] && vnt_tun="vnt-tap"
+                fi 
 		iptables -t nat -I POSTROUTING -j MASQUERADE
-		iptables -I FORWARD -o vnt-tun -j ACCEPT
-                iptables -I FORWARD -i vnt-tun -j ACCEPT
-                iptables -I INPUT -i vnt-tun -j ACCEPT
-		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1
+		iptables -I FORWARD -o $vnt_tun -j ACCEPT
+                iptables -I FORWARD -i $vnt_tun -j ACCEPT
+                iptables -I INPUT -i $vnt_tun -j ACCEPT
+		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1
                 [ ! -z "$checkip" ] && check
                 echo `date +%s` > /tmp/vnt_time
 }
@@ -387,12 +392,22 @@ start_vnts() {
 }
 
 stop_cli() {
+                local cfg="$1"
+		local tunname tunmode
+		config_get tunname "$cfg" 'tunname'
+                config_get tunmode "$cfg" 'tunmode'
+                if [ ! -z "$tunname" ] ; then
+                   vnt_tun="$tunname"
+                else
+                   [ "$tunmode" = "tun" ] && vnt_tun="vnt-tun"
+                   [ "$tunmode" = "tap" ] && vnt_tun="vnt-tap"
+                fi
                 pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		iptables -D FORWARD -o vnt-tun -j ACCEPT 2>"/dev/null"
-                iptables -D FORWARD -i vnt-tun -j ACCEPT 2>"/dev/null"
-                iptables -D INPUT -i vnt-tun -j ACCEPT 2>"/dev/null"
+		iptables -D FORWARD -o $vnt_tun -j ACCEPT 2>"/dev/null"
+                iptables -D FORWARD -i $vnt_tun -j ACCEPT 2>"/dev/null"
+                iptables -D INPUT -i $vnt_tun -j ACCEPT 2>"/dev/null"
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /log/vnt-cli*.log
                 rm -rf /tmp/vntnew.tag /tmp/vnt.tag
@@ -439,7 +454,7 @@ start_service() {
 
 stop_service() {
         [ "$(uci -q get vnt.@vnts[0].enabled)" = "0" ] && stop_vnts 'vnts'
-        [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "0" ] && stop_cli
+        [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "0" ] && stop_cli 'vnt-cli'
 }
 
 reload_service() {
