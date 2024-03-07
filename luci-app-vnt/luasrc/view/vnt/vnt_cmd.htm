@@ -11,7 +11,6 @@
 			var tb = document.getElementById('<%=self.option%>-status');
 			if (tb) {
   rv.cmd = rv.cmd.replace(/-k/g, "<font color='#0000FF'><em><b>-k&nbsp;</em></b></font>")
-                  .replace(/--ip/g, "<font color='#0000FF'><em><b>--ip</em></b></font>")
                   .replace(/-d/g, "<font color='#0000FF'><em><b>-d&nbsp;</em></b></font>")
                   .replace(/-n/g, "<font color='#0000FF'><em><b>-n</em></b></font>")
                   .replace(/-s/g, "<font color='#0000FF'><em><b>-s</em></b></font>")
@@ -32,6 +31,7 @@
                  .replace(/-e/g, "<font color='#0000FF'><em><b>-e&nbsp;</b></em></font>")
                  .replace(/--first-latency/g, "<font color='#0000FF'><em><b>--first-latency&nbsp;</b></em></font>")
                  .replace(/--relay/g, "<font color='#0000FF'><em><b>--relay&nbsp;</b></em></font>")
+	         .replace(/--地址/g, "<font color='#0000FF'><em><b>--ip</em></b></font>")
 	         .replace(/网卡名/g, "<font color='#0000FF'><em><b>--nic&nbsp;</em></b></font>")
                  .replace(/直连方式/g, "<font color='#0000FF'><em><b>--use-channel&nbsp;</em></b></font>")
                  .replace(/-proxy/g, "<font color='#0000FF'><em><b>-proxy</em></b></font>");
