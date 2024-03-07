@@ -19,11 +19,11 @@ s:tab("upload", translate("上传程序"))
 switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
-token = s:taboption("general", Value, "token", translate("VPN名称"),
-	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，相同VPN名称的设备才会组成一个局域网（这是 -k 参数）"))
+token = s:taboption("general", Value, "token", translate("Token"),
+	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，使用相同token的客户端设备才会组成一个局域网（这是 -k 参数）"))
 token.optional = false
 token.password = true
-token.placeholder = "abc123"
+token.placeholder = "test"
 token.datatype = "string"
 token.maxlength = 63
 token.minlength = 1
@@ -31,7 +31,7 @@ token.validate = function(self, value, section)
     if value and #value >= 1 and #value <= 63 then
         return value
     else
-        return nil, translate("VPN名称为必填项，可填1至63位字符")
+        return nil, translate("Token为必填项，可填1至63位字符")
     end
 end
 switch.write = function(self, section, value)
@@ -67,11 +67,11 @@ peeradd = s:taboption("general",DynamicList, "peeradd", translate("对端网段"
 peeradd.placeholder = "192.168.2.0/24,10.26.0.3"
 
 forward = s:taboption("general",Flag, "forward", translate("启用IP转发"),
-	translate("内置的代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高,所以默认开启IP转发关闭内置的ip代理"))
+	translate("内置的IP代理较为简单，而且一般来说直接使用网卡NAT转发性能会更高,所以默认开启IP转发关闭内置的ip代理"))
 forward.rmempty = false
 
 log = s:taboption("general",Flag, "log", translate("启用日志"),
-	translate("运行日志在/log目录里,可在上方客户端日志查看"))
+	translate("运行日志在/tmp/vnt_logs目录里,可在上方客户端日志查看"))
 log.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
@@ -79,7 +79,7 @@ clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"
 clibin.placeholder = "/tmp/vnt-cli"
 
 vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地址"),
-	translate("相同的服务器，相同VPN名称的设备才会组成一个局域网"))
+	translate("相同的服务器，相同token的设备才会组成一个局域网"))
 vntshost.placeholder = "域名:端口"
 vntshost.password = true
 
@@ -96,10 +96,20 @@ tunmode = s:taboption("privacy",ListValue, "tunmode", translate("TUN/TAP网卡")
 tunmode:value("tun")
 tunmode:value("tap")
 
+tunname = s:taboption("privacy",Value, "tunname", translate("虚拟网卡名称"),
+	translate("自定义虚拟网卡的名称，在多开时虚拟网卡名称不能相同，默认：TUN模式为 vnt-tun ，TAP模式为 vnt-tap"))
+tunname.placeholder = "vnt-tun"
+
 tcp = s:taboption("privacy",ListValue, "tcp", translate("TCP/UDP模式"),
 	translate("有些网络提供商对UDP限制比较大，这个时候可以选择使用TCP模式，提高稳定性。一般来说udp延迟和消耗更低"))
 tcp:value("udp")
 tcp:value("tcp")
+
+relay = s:taboption("privacy",ListValue, "relay", translate("传输模式"),
+	translate("自动:根据当前网络环境，自动选择由服务器或客户端转发还是客户端之间直连<br>转发:仅中继转发，会禁止打洞/p2p直连，只使用服务器或客户端转发<br>p2p:仅直连模式，会禁止网络数据从服务器/客户端转发，只会使用服务器转发控制包<br>在网络环境很差时，不使用p2p只使用服务器中继转发效果可能更好（可以配合tcp模式一起使用）"))
+relay:value("自动")
+relay:value("转发")
+relay:value("P2P")
 
 mtu = s:taboption("privacy",Value, "mtu", translate("MTU"),
 	translate("设置虚拟网卡的mtu值，大多数情况下（留空）使用默认值效率会更高，也可根据实际情况进行微调，默认值：不加密1450，加密1410"))
@@ -111,7 +121,7 @@ par = s:taboption("privacy",Value, "par", translate("并行任务数"),
 par.placeholder = "2"
 
 punch = s:taboption("privacy",ListValue, "punch", translate("IPV4/IPV6"),
-	translate("取值ipv4/ipv6，选择只使用ipv4打洞或者只使用ipv6打洞，默认两则都会使用,ipv6相对于ipv4速率会有所降低，ipv6更容易打通直连"))
+	translate("选择只使用ipv4打洞或者只使用ipv6打洞，默认两则都会使用,ipv6相对于ipv4速率可能会有所降低，ipv6更容易打通直连"))
 punch:value("ipv4/ipv6")
 punch:value("ipv4")
 punch:value("ipv6")
@@ -140,16 +150,12 @@ finger = s:taboption("privacy",Flag, "finger", translate("启用数据指纹校�
 	translate("开启数据指纹校验，可增加安全性，如果服务端开启指纹校验，则客户端也必须开启，开启会损耗一部分性能。<br>注意：默认情况下服务端不会对中转的数据做校验，如果要对中转的数据做校验，则需要客户端、服务端都开启此参数"))
 finger.rmempty = false
 
-relay = s:taboption("privacy",Flag, "relay", translate("禁用P2P"),
-	translate("在网络环境很差时，不使用p2p只使用服务器中继转发效果可能更好（可以配合tcp模式一起使用）"))
-relay.rmempty = false
-
 first_latency = s:taboption("privacy",Flag, "first_latency", translate("启用优化传输"),
 	translate("启用后优先使用低延迟通道，默认情况下优先使用p2p通道，某些情况下可能p2p比客户端中继延迟更高，可启用此参数进行优化传输"))
 first_latency.rmempty = false
 
 multicast = s:taboption("privacy",Flag, "multicast", translate("启用模拟组播"),
-	translate("模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。<br>1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。<br>2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
+	translate("自1.2.9版本起此功能已取消，不要勾选<br>模拟组播，高频使用组播通信时，可以尝试开启此参数，默认情况下会把组播当作广播发给所有节点。<br>1.默认情况(组播当广播发送)：稳定性好，使用组播频率低时更省流量。<br>2.模拟组播：高频使用组播时防止广播泛洪，客户端和中继服务器会维护组播成员等信息，注意使用此选项时，虚拟网内所有成员都需要开启此选项"))
 multicast.rmempty = false
 
 check = s:taboption("privacy",Flag, "check", translate("通断检测"),
@@ -387,9 +393,8 @@ server_port.optional = false
 server_port.placeholder = "2345"
 
 
-white_Token = s:taboption("gen",DynamicList, "white_Token", translate("VPN名称白名单"),
-	translate("填写后将只能指定的VPN名称才能连接，留空则没有限制，所有VPN名称都可以连接此服务端"))
-white_Token.placeholder = "abc123"
+white_Token = s:taboption("gen",DynamicList, "white_Token", translate("Token白名单"),
+	translate("填写后将只能指定的token才能连接此服务器，留空则没有限制，所有token都可以连接此服务端"))
 
 subnet = s:taboption("gen",Value, "subnet", translate("指定DHCP网关"),
 	translate("分配给vnt-cli客户端的接口IP网段"))
@@ -400,7 +405,7 @@ servern_netmask = s:taboption("gen",Value, "servern_netmask", translate("指定�
 servern_netmask.placeholder = "225.225.225.0"
 
 logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
-	translate("运行日志在/log目录里，可在上方服务端日志查看"))
+	translate("运行日志在/tmp/vnt_logs目录里，可在上方服务端日志查看"))
 logs.rmempty = false
 
 vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
