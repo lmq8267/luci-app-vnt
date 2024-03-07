@@ -215,8 +215,8 @@ EOF
 		[ "$finger" = "0" ] || procd_append_param command --finger
 		[ "$serverw" = "0" ] || procd_append_param command -W
 		[ "$first_latency" = "0" ] || procd_append_param command --first-latency
-                [ "$relay" = "转发" ] || procd_append_param command --use-channel relay
-                [ "$relay" = "P2P" ] || procd_append_param command --use-channel p2p
+                [ "$relay" = "转发" ] && procd_append_param command --use-channel relay
+                [ "$relay" = "P2P" ] && procd_append_param command --use-channel p2p
 
 		procd_set_param limits core="unlimited"
 		procd_set_param limits nofile="1000000 1000000"
