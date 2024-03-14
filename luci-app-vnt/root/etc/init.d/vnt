@@ -417,7 +417,7 @@ stop_cli() {
                 pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-                iptables -t nat -D POSTROUTING -o $vnt_tun -j MASQUERADE 2>"/dev/null
+                iptables -t nat -D POSTROUTING -o $vnt_tun -j MASQUERADE 2>"/dev/null"
 		iptables -D FORWARD -o $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D FORWARD -i $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D INPUT -i $vnt_tun -j ACCEPT 2>"/dev/null"
