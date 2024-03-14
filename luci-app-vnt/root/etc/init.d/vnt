@@ -228,7 +228,18 @@ EOF
                 if [ -z "$tunname" ] ; then
                    [ "$tunmode" = "tun" ] && vnt_tun="vnt-tun"
                    [ "$tunmode" = "tap" ] && vnt_tun="vnt-tap"
+                else
+                   vnt_tun="$tunname"
                 fi 
+                if [ ! -z "$client_port" ] ; then
+                   if [ ! -z "$(echo $client_port | grep ',' )" ] ; then
+	              vnt_tcp_port="${client_port%%,*}"
+	           else
+                      vnt_tcp_port="$vnt_port"
+                    fi
+	            iptables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
+                    ip6tables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
+	        fi
 		iptables -t nat -I POSTROUTING -j MASQUERADE
 		iptables -I FORWARD -o $vnt_tun -j ACCEPT
                 iptables -I FORWARD -i $vnt_tun -j ACCEPT
@@ -393,7 +404,8 @@ start_vnts() {
 
 stop_cli() {
                 local cfg="$1"
-		local tunname tunmode
+		local tunname tunmode client_port
+                config_get client_port "$cfg" 'client_port'
 		config_get tunname "$cfg" 'tunname'
                 config_get tunmode "$cfg" 'tunmode'
                 if [ ! -z "$tunname" ] ; then
@@ -408,6 +420,15 @@ stop_cli() {
 		iptables -D FORWARD -o $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D FORWARD -i $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D INPUT -i $vnt_tun -j ACCEPT 2>"/dev/null"
+                if [ ! -z "$client_port" ] ; then
+                   if [ ! -z "$(echo $client_port | grep ',' )" ] ; then
+	              vnt_tcp_port="${client_port%%,*}"
+	           else
+                      vnt_tcp_port="$vnt_port"
+                    fi
+	            iptables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
+                    ip6tables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
+	        fi
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /log/vnt-cli*.log
                 rm -rf /tmp/vntnew.tag /tmp/vnt.tag
