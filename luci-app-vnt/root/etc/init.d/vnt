@@ -231,11 +231,11 @@ EOF
                 else
                    vnt_tun="$tunname"
                 fi 
-                if [ ! -z "$client_port" ] ; then
+                if [ ! -z "$client_port" ] && [ "$tcp" = "tcp" ] ; then
                    if [ ! -z "$(echo $client_port | grep ',' )" ] ; then
 	              vnt_tcp_port="${client_port%%,*}"
 	           else
-                      vnt_tcp_port="$vnt_port"
+                      vnt_tcp_port="$client_port"
                     fi
 	            iptables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
                     ip6tables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
@@ -421,11 +421,11 @@ stop_cli() {
 		iptables -D FORWARD -o $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D FORWARD -i $vnt_tun -j ACCEPT 2>"/dev/null"
                 iptables -D INPUT -i $vnt_tun -j ACCEPT 2>"/dev/null"
-                if [ ! -z "$client_port" ] ; then
+                if [ ! -z "$client_port" ] && [ "$tcp" = "tcp" ] ; then
                    if [ ! -z "$(echo $client_port | grep ',' )" ] ; then
 	              vnt_tcp_port="${client_port%%,*}"
 	           else
-                      vnt_tcp_port="$vnt_port"
+                      vnt_tcp_port="$client_port"
                     fi
 	            iptables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
                     ip6tables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
