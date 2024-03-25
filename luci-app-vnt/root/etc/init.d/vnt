@@ -142,7 +142,7 @@ appenders:
     path: /tmp/vnt_logs/vnt-cli.log
     append: true
     encoder:
-      pattern: "{d} [{f}:{L}] {h({l})} {M}:{m}{n}"
+      pattern: "{d(%Y-%m-%d %H:%M:%S vnt:)} [{f}:{L}] {h({l})} {M}:{m}{n}"
     policy:
       kind: compound
       trigger:
