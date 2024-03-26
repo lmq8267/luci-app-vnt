@@ -362,13 +362,13 @@ http.setfilehandler(
                 local file_path = dir .. meta.file
                 os.execute("tar -xzf " .. file_path .. " -C " .. dir)
                if nixio.fs.access("/tmp/vnt-cli") then
-                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnt-cli上传成功")
+                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnt-cli上传成功，重启一次客户端才生效")
                 end
                if nixio.fs.access("/tmp/vnts") then
-                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnts上传成功")
+                    um.value = um.value .. "\n" .. translate("-程序/tmp/vnts上传成功，重启一次服务端才生效")
                 end
 	       if nixio.fs.access("/tmp/static/index.html") then
-                    um.value = um.value .. "\n" .. translate("-WEB界面/tmp/static上传成功")
+                    um.value = um.value .. "\n" .. translate("-WEB界面/tmp/static上传成功，重启一次服务端才生效")
                 end
                end
                 os.execute("chmod 777 /tmp/vnts")
