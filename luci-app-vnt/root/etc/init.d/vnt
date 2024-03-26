@@ -346,9 +346,6 @@ start_vnts() {
                   if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : /tmp/vnts 下载成功" >>/log/vnts.log
                     mv -f /tmp/vnts "$vntsbin"
-                    if  [ -f /tmp/static/index.html ] ; then
-                        mv -f /tmp/static $web_path
-		    fi
                  else
                      uci -q set vnt.@vnts[0].enabled=0
                      uci commit vnt
@@ -356,6 +353,9 @@ start_vnts() {
                      return 1
                   fi
                 fi
+                if  [ -f /tmp/static/index.html ] ; then
+                    mv -f /tmp/static $web_path
+		fi
                chmod +x "$vntsbin"
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
