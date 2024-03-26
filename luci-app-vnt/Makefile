@@ -22,10 +22,6 @@ if [ -f /etc/config/vnt ] ; then
   echo "不重启设备之前再次安装luci-app-vnt 配置不丢失,不用重新配置"
   mv -f /etc/config/vnt /tmp/vnt_backup
 fi
-vntsbin="$(uci -q get vnt.@vnts[0].vntsbin)"
-[ ! -z "$vntsbin" ] && path=$(dirname "$vntsbin")
-[ ! -z "$path" ] && web_path="${path}/static"
-[ ! -z "$web_path" ] && [ -d "$web_path" ] && rm -rf $web_path
 endef
 
 define Package/$(PKG_NAME)/postinst
