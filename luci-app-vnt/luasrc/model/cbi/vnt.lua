@@ -408,6 +408,11 @@ web = s:taboption("gen",Flag, "web", translate("启用WEB管理"),
 	translate("WEB管理界面，图形化显示所有客户端详情"))
 web.rmempty = false
 
+web_port = s:taboption("gen",Value, "web_port", translate("WEB端口"))
+web_port.datatype = "port"
+web_port:depends("web", "1")
+web_port.placeholder = "29870"
+
 webuser = s:taboption("gen", Value, "webuser", translate("帐号"),
 	translate("WEB管理界面的登录用户名"))
 webuser.placeholder = "admin"
