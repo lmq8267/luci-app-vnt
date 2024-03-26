@@ -404,6 +404,22 @@ subnet.placeholder = "10.10.10.1"
 servern_netmask = s:taboption("gen",Value, "servern_netmask", translate("指定子网掩码"))
 servern_netmask.placeholder = "225.225.225.0"
 
+web = s:taboption("gen",Flag, "web", translate("启用WEB管理"),
+	translate("WEB管理界面，图形化显示所有客户端详情"))
+web.rmempty = false
+
+webuser = s:taboption("gen", Value, "webuser", translate("帐号"),
+	translate("WEB管理界面的登录用户名"))
+webuser.placeholder = "admin"
+webuser:depends("web", "1")
+webuser.password = true
+
+webpass = s:taboption("gen", Value, "webpass", translate("密码"),
+	translate("WEB管理界面的登录密码"))
+webpass.placeholder = "admin"
+webpass:depends("web", "1")
+webpass.password = true
+
 logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
 	translate("运行日志在/tmp/vnt_logs目录里，可在上方服务端日志查看"))
 logs.rmempty = false
