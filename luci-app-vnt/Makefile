@@ -23,9 +23,9 @@ if [ -f /etc/config/vnt ] ; then
   mv -f /etc/config/vnt /tmp/vnt_backup
 fi
 vntsbin="$(uci -q get vnt.@vnts[0].vntsbin)"
-path=$(dirname "$vntsbin")
-web_path="${path}/static"
-[ -d "$web_path" ] && rm -rf $web_path
+[ ! -z "$vntsbin" ] && path=$(dirname "$vntsbin")
+[ ! -z "$path" ] && web_path="${path}/static"
+[ ! -z "$web_path" ] && [ -d "$web_path" ] && rm -rf $web_path
 endef
 
 define Package/$(PKG_NAME)/postinst
