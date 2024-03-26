@@ -19,7 +19,7 @@ define Package/$(PKG_NAME)/prerm
 #!/bin/sh
 if [ -f /etc/config/vnt ] ; then
   echo "备份vnt配置文件/etc/config/vnt到/tmp/vnt_backup"
-  echo "再次安装luci-app-vnt 配置不丢失,不用重新配置，如果重启机器此配置文件将会丢失"
+  echo "不重启设备之前再次安装luci-app-vnt 配置不丢失,不用重新配置"
   mv -f /etc/config/vnt /tmp/vnt_backup
 fi
 vntsbin="$(uci -q get vnt.@vnts[0].vntsbin)"
