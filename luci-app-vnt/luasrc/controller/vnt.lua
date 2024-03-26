@@ -24,6 +24,10 @@ end
 
 function act_status()
 	local e = {}
+	local sys  = require "luci.sys"
+	local uci  = require "luci.model.uci".cursor()
+	local port = tonumber(uci:get_first("vnt", "vnts", "web_port"))
+        e.port = (port or 29870)
 	e.crunning = luci.sys.call("pgrep vnt-cli >/dev/null") == 0
 	e.srunning = luci.sys.call("pgrep vnts >/dev/null") == 0
 	local tagfile = io.open("/tmp/vnt_time", "r")
