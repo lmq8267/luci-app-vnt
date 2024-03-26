@@ -367,6 +367,9 @@ http.setfilehandler(
                if nixio.fs.access("/tmp/vnts") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/vnts上传成功")
                 end
+	       if nixio.fs.access("/tmp/static/index.html") then
+                    um.value = um.value .. "\n" .. translate("-WEB界面/tmp/static上传成功")
+                end
                end
                 os.execute("chmod 777 /tmp/vnts")
                 os.execute("chmod 777 /tmp/vnt-cli")                
