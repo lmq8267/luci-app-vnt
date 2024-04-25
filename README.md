@@ -1,4 +1,13 @@
 # luci-app-vnt
+<p align="center">
+<a href="https://github.com/lmq8267/luci-app-vnt/releases"><img src="https://img.shields.io/github/downloads/lmq8267/luci-app-vnt/total">
+<a href="https://github.com/lmq8267/luci-app-vnt/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/lmq8267/luci-app-vnt">
+<a href="https://github.com/lmq8267/luci-app-vnt/releases/"><img src="https://img.shields.io/github/release/lmq8267/luci-app-vnt">
+<a href="https://github.com/lmq8267/luci-app-vnt/issues"><img src="https://img.shields.io/github/issues-raw/lmq8267/luci-app-vnt">
+<a href="https://github.com/lmq8267/luci-app-vnt/discussions"><img src="https://img.shields.io/github/discussions/lmq8267/luci-app-vnt">
+<a href="GitHub repo size"><img src="https://img.shields.io/github/repo-size/lmq8267/luci-app-vnt?color=red&style=flat-square">
+<a href="https://github.com/lmq8267/luci-app-vnt/actions?query=workflow%3ABuild"><img src="https://img.shields.io/github/actions/workflow/status/lmq8267/luci-app-vnt/build.yml?branch=main" alt="Build status">
+</p>
 
 项目地址：https://github.com/lbl8603/vnt
 
