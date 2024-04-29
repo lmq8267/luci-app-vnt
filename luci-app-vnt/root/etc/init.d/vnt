@@ -14,41 +14,41 @@ start_vntcli() {
                 if [ -z "$clibin" ] ;then
                    clibin=/tmp/vnt-cli
                 fi
-                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/log/vnt-cli.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/tmp/vnt-cli.log
                 path=$(dirname "$clibin")
                 if [ -f /tmp/vnt-cli ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnt-cli
-                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin " >>/log/vnt-cli.log
+                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnt-cli，替换为$clibin " >>/tmp/vnt-cli.log
                    upsize="$(du -k /tmp/vnt-cli | cut -f1)"
                    result=$(expr $size - $upsize)
                    if [ $(($(/tmp/vnt-cli -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
                      mv -f /tmp/vnt-cli "$clibin"
                      else
-                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/log/vnt-cli.log
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/tmp/vnt-cli.log
                    fi
                 fi
                 if [ ! -f "$clibin" ] && [ "$size" -lt 4000 ] ; then
-                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnt-cli" >>/log/vnt-cli.log
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnt-cli" >>/tmp/vnt-cli.log
                     sed -i "/clibin/c option clibin '/tmp/vnt-cli' " /etc/config/vnt 
                     clibin=/tmp/vnt-cli
                 fi
 		if [ $(($($clibin -h | wc -l))) -lt 3 ] || [ ! -f "$clibin" ] ; then
-		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/log/vnt-cli.log
+		 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到程序 $clibin 开始在线下载，下载较慢耐心等候" >>/tmp/vnt-cli.log
                  mkdir -p "$path"
 	         curl -o "${clibin}" --connect-timeout 10 --retry 3 "http://webd.liaoh.dedyn.io:19213/vnt-cli_${cpucore}"
                  chmod +x "$clibin"
  if [ $(($($clibin -h | wc -l))) -gt 3 ]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin} 下载成功" >>/log/vnt-cli.log
+    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin} 下载成功" >>/tmp/vnt-cli.log
  else
    uci -q set vnt.@vnt-cli[0].enabled=0
    uci commit vnt
-   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $clibin 下载失败，请手动下载上传程序,程序退出" >>/log/vnt-cli.log
+   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $clibin 下载失败，请手动下载上传程序,程序退出" >>/tmp/vnt-cli.log
    return 1
  fi
                 fi
                 chmod +x "$clibin"
                 ver="$($clibin -h | grep version | awk -F ':' {'print $2'})"
-                [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}当前版本号-${ver} " >>/log/vnt-cli.log
+                [ ! -z "$ver" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${clibin}当前版本号-${ver} " >>/tmp/vnt-cli.log
                 pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
@@ -140,7 +140,7 @@ refresh_rate: 30 seconds
 appenders:
   rolling_file:
     kind: rolling_file
-    path: /tmp/vnt_logs/vnt-cli.log
+    path: /tmp/vnt-cli.log
     append: true
     encoder:
       pattern: "{d(%Y-%m-%d %H:%M:%S vnt:)} [{f}:{L}] {h({l})} {M}:{m}{n}"
@@ -151,7 +151,7 @@ appenders:
         limit: 1 mb
       roller:
         kind: fixed_window
-        pattern: /tmp/vnt_logs/vnt-cli.{}.log
+        pattern: /tmp/vnt-cli.{}.log
         base: 1
         count: 2
 
@@ -162,8 +162,8 @@ root:
 EOF
            fi
         [ ! -L /log4rs.yaml ] && rm -rf /log4rs.yaml && ln -sf /tmp/log4rs.yaml /log4rs.yaml
-        [ ! -L /tmp/vnt-cli.0.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt_logs/vnt-cli.0.log
-        [ ! -L /tmp/vnt-cli.1.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt_logs/vnt-cli.1.log
+        [ ! -L /tmp/vnt-cli.0.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt-cli.0.log
+        [ ! -L /tmp/vnt-cli.1.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt-cli.1.log
       else
       rm -rf /tmp/log4rs.yaml
           fi
@@ -279,21 +279,21 @@ while true; do
            online=""
            for ip in $(uci -q get vnt.@vnt-cli[0].checkip); do
            ms=`echo $(ping -4 $ip  -c 2 -w 4 -q) | awk -F '/' '{print $4}'`
-           [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/log/vnt-cli.log && online=1
-           [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/log/vnt-cli.log
+           [ ! -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 延迟：${ms}ms " >>/tmp/vnt-cli.log && online=1
+           [ -z "$ms" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：${ip} 网络中断 " >>/tmp/vnt-cli.log
            done     
-           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：$(uci -q get vnt.@vnt-cli[0].checkip) 所有指定IP皆无法ping通,重新启动程序！ " >>/log/vnt-cli.log && /etc/init.d/vnt restart
+           [ "$online" != "1" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：$(uci -q get vnt.@vnt-cli[0].checkip) 所有指定IP皆无法ping通,重新启动程序！ " >>/tmp/vnt-cli.log && /etc/init.d/vnt restart
         fi
      else
-        echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/log/vnt-cli.log
+        echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：检测到互联网未能成功访问，跳过检测 " >>/tmp/vnt-cli.log
     fi
  else
- echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：程序已关闭，退出检测 " >>/log/vnt-cli.log
+ echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 通断检测：程序已关闭，退出检测 " >>/tmp/vnt-cli.log
  /etc/init.d/vnt restart
  break
  fi
 sleep $((time))
-[ "$(du -k /log/vnt-cli.log | cut -f1)" = "1000" ] && echo " " >/log/vnt-cli.log
+[ "$(du -k /log/vnt-cli.log | cut -f1)" = "1000" ] && echo " " >/tmp/vnt-cli.log
 done
 EOF
   chmod +x /tmp/vnt_check
@@ -306,24 +306,24 @@ start_vnts() {
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/log/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/tmp/vnts.log
                 config_get vntsbin "$cfg" 'vntsbin'
                 if [ -z "$vntsbin" ] ;then
                    vntsbin=/tmp/vnts
                 fi
                 if [ -f /tmp/vnts ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnts
-                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin " >>/log/vnts.log
+                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin " >>/tmp/vnts.log
                    upsize="$(du -k /tmp/vnts | cut -f1)"
                    result=$(expr $size - $upsize)
                    if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ] && [ "$result" -gt 500 ] ; then
                      mv -f /tmp/vnts "$vntsbin"
                      else
-                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/log/vnts.log
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 无法替换，上传的程序不完整或自定义路径的可用空间不足，当前空间剩余${size}kb" >>/tmp/vnts.log
                    fi
                 fi
                 if [ ! -f "$vntsbin" ] && [ "$size" -lt 11000 ] ; then
-                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts" >>/log/vnts.log
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 自定义程序路径的可用空间不足，当前可用空间剩余${size}kb,自动切换为内存/tmp/vnts" >>/tmp/vnts.log
                     uci -q set vnt.@vnts[0].vntsbin=/tmp/vnts
                     uci commit
                     vntsbin=/tmp/vnts
@@ -333,7 +333,7 @@ start_vnts() {
                 key_path="${path}/key"
                 log_path="${path}/log"
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.9.6版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.9.6版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/tmp/vnts.log
                 mkdir -p "$path"
                 proxy_url="https://hub.gitmirror.com/"
                 proxy_url2="http://gh.ddlc.top/"
@@ -357,12 +357,12 @@ start_vnts() {
                    chmod +x /tmp/vnts
                    rm -rf /tmp/vnts.tar.gz
                   if [ $(($(/tmp/vnts -h | wc -l))) -gt 3 ]; then
-                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : /tmp/vnts 下载成功" >>/log/vnts.log
+                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : /tmp/vnts 下载成功" >>/tmp/vnts.log
                     mv -f /tmp/vnts "$vntsbin"
                  else
                      uci -q set vnt.@vnts[0].enabled=0
                      uci commit vnt
-                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出" >>/log/vnts.log
+                     echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : $vntsbin 下载失败，请手动下载上传程序,程序退出" >>/tmp/vnts.log
                      return 1
                   fi
                 fi
@@ -385,7 +385,7 @@ start_vnts() {
                 config_get_bool sfinger "$cfg" 'sfinger' '0'
 
                 if [ "$web" = "1" ] && [ ! -f "${web_path}/index.html" ] ; then
-                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到WEB静态文件${web_path}，请手动下载static文件夹上传至${web_path},才能打开web管理界面" >>/log/vnts.log
+                   echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未找到WEB静态文件${web_path}，请手动下载static文件夹上传至${web_path},才能打开web管理界面" >>/tmp/vnts.log
 		fi
 		procd_open_instance "vnts"
 		procd_set_param command "$vntsbin"
@@ -433,10 +433,16 @@ start_vnts() {
 	      if [ "$logs" = "1" ] ;then
 	       sed -i 's|limit: 10 mb|limit: 1 mb|g' ${log_path}/log4rs.yaml
 	       sed -i 's|count: 5|count: 2|g' ${log_path}/log4rs.yaml
+	       logyaml=$(cat ${log_path}/log4rs.yaml |grep path: | awk -F'path: ' '{print $2}')
+               if [ "$logyaml" != "/tmp/vnts.log" ] ; then
+                  sed -i "s|${logyaml}|/tmp/vnts.log|g" ${log_path}/log4rs.yaml
+               fi
                [ ! -L /tmp/vnts.0.log ] && ln -sf /tmp/vnts.log /tmp/vnts.0.log
                [ ! -L /tmp/vnts.1.log ] && ln -sf /tmp/vnts.log /tmp/vnts.1.log
 	      fi
-              [ ! -L /tmp/key ] && ln -sf $key_path /tmp/key
+              mkdir -p /tmp/key
+              [ ! -L /tmp/key/public_key.pem ] && ln -sf ${key_path}/public_key.pem /tmp/key/public_key.pem
+              [ ! -L /tmp/key/private_key.pem ] && ln -sf ${key_path}/private_key.pem /tmp/key/private_key.pem
               echo `date +%s` > /tmp/vnts_time
 }
 
@@ -471,7 +477,7 @@ stop_cli() {
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /tmp/vnt-cli.log /tmp/vnt-cli*.log
                 rm -rf /tmp/vntnew.tag /tmp/vnt.tag
-                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnt-cli.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/tmp/vnt-cli.log
 }
 stop_vnts() {
 	        local cfg="$1"
