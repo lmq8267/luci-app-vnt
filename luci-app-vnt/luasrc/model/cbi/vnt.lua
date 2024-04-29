@@ -83,8 +83,12 @@ vntshost = s:taboption("privacy", Value, "vntshost", translate("vnts服务器地
 vntshost.placeholder = "域名:端口"
 vntshost.password = true
 
+vntdns = s:taboption("privacy",DynamicList, "vntdns", translate("DNS服务器"),
+	translate("指定DNS服务器地址,可使用多个dns,不指定时使用系统解析"))
+vntdns.placeholder = "8.8.8.8:53"
+
 stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务器地址"),
-	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，已内置谷歌 QQ 可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
+	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，最多三个，超过将被忽略<br>已内置谷歌 QQ 可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
 stunhost.placeholder = "stun.qq.com:3478"
 
 desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
@@ -192,9 +196,7 @@ btn1.inputstyle = "apply"
 btn1:depends("cmdmode", "原版")
 btn1.write = function()
 if process_status ~= "" then
-    luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
-    luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --info >/tmp/vnt-cli_info")
+   luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --info >/tmp/vnt-cli_info")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_info")
 end
@@ -220,8 +222,6 @@ btn2.inputstyle = "apply"
 btn2:depends("cmdmode", "原版")
 btn2.write = function()
 if process_status ~= "" then
-    luci.sys.call("mkdir -p /root/.vnt-cli")  
-    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --all >/tmp/vnt-cli_all")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_all")
@@ -248,8 +248,6 @@ btn3.inputstyle = "apply"
 btn3:depends("cmdmode", "原版")
 btn3.write = function()
 if process_status ~= "" then
-    luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --list >/tmp/vnt-cli_list")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_list")
@@ -276,8 +274,6 @@ btn4.inputstyle = "apply"
 btn4:depends("cmdmode", "原版")
 btn4.write = function()
 if process_status ~= "" then
-    luci.sys.call("mkdir -p /root/.vnt-cli")
-    luci.sys.call("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print $2}' | awk '{print $1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
     luci.sys.call("$(uci -q get vnt.@vnt-cli[0].clibin) --route >/tmp/vnt-cli_route")
 else
     luci.sys.call("echo '错误：程序未运行！请启动程序后重新点击刷新' >/tmp/vnt-cli_route")
@@ -393,7 +389,7 @@ switch.rmempty = false
 server_port = s:taboption("gen",Value, "server_port", translate("本地监听端口"))
 server_port.datatype = "port"
 server_port.optional = false
-server_port.placeholder = "2345"
+server_port.placeholder = "29872"
 
 
 white_Token = s:taboption("gen",DynamicList, "white_Token", translate("Token白名单"),
@@ -402,7 +398,7 @@ white_Token = s:taboption("gen",DynamicList, "white_Token", translate("Token白�
 subnet = s:taboption("gen",Value, "subnet", translate("指定DHCP网关"),
 	translate("分配给vnt-cli客户端的接口IP网段"))
 subnet.datatype = "ip4addr"
-subnet.placeholder = "10.10.10.1"
+subnet.placeholder = "10.10.0.1"
 
 servern_netmask = s:taboption("gen",Value, "servern_netmask", translate("指定子网掩码"))
 servern_netmask.placeholder = "225.225.225.0"
@@ -429,7 +425,7 @@ webpass:depends("web", "1")
 webpass.password = true
 
 logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
-	translate("运行日志在/tmp/vnt_logs目录里，可在上方服务端日志查看"))
+	translate("运行日志在/tmp/vnts.log，可在上方服务端日志查看"))
 logs.rmempty = false
 
 vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
@@ -441,25 +437,25 @@ sfinger = s:taboption("pri",Flag, "sfinger", translate("启用数据指纹校验
 sfinger.rmempty = false
 
 public_key = s:taboption("pri",TextValue, "public_key", translate("public公钥"),
-	translate("服务端密钥在/key目录下,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)"))
+	translate("服务端密钥在程序同目录/key里,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)"))
 public_key.rows = 3
 public_key.wrap = "off"
 public_key.cfgvalue = function(self, section)
-    return nixio.fs.readfile("/key/public_key.pem") or ""
+    return nixio.fs.readfile("/tmp/key/public_key.pem") or ""
 end
 public_key.write = function(self, section, value)
-    fs.writefile("/key/public_key.pem", value:gsub("\r\n", "\n"))
+    fs.writefile("/tmp/key/public_key.pem", value:gsub("\r\n", "\n"))
 end
 
 private_key = s:taboption("pri",TextValue, "private_key", translate("private私钥"),
-	translate("服务端密钥在/key目录下,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)<br>服务端密钥用于加密客户端和服务端之间传输的数据(使用rsa+aes256gcm加密)<br>可以防止token被中间人窃取，如果客户端显示的密钥指纹和服务端的不一致，<br>则表示可能有中间人攻击"))
+	translate("服务端密钥在程序同目录/key里,可以替换成自定义的密钥对<br>修改服务端密钥后，客户端要重启才能正常链接(修改密钥后无法自动重连)<br>服务端密钥用于加密客户端和服务端之间传输的数据(使用rsa+aes256gcm加密)<br>可以防止token被中间人窃取，如果客户端显示的密钥指纹和服务端的不一致，<br>则表示可能有中间人攻击"))
 private_key.rows = 3
 private_key.wrap = "off"
 private_key.cfgvalue = function(self, section)
-    return nixio.fs.readfile("/key/private_key.pem") or ""
+    return nixio.fs.readfile("/tmp/key/private_key.pem") or ""
 end
 private_key.write = function(self, section, value)
-    fs.writefile("/key/private_key.pem", value:gsub("\r\n", "\n"))
+    fs.writefile("/tmp/key/private_key.pem", value:gsub("\r\n", "\n"))
 end
 
 local vnts_status = luci.sys.exec("ps | grep vnts | grep -v grep")
