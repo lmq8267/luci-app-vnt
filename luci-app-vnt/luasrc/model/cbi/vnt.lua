@@ -19,6 +19,15 @@ s:tab("upload", translate("上传程序"))
 switch = s:taboption("general",Flag, "enabled", translate("Enable"))
 switch.rmempty = false
 
+btncq = s:taboption("general", Button, "btncq", translate("重启"))
+btncq.inputtitle = translate("重启")
+btncq.description = translate("在没有修改参数的情况下快速重新启动一次")
+btncq.inputstyle = "apply"
+btncq:depends("enabled", "1")
+btncq.write = function()
+  os.execute("/etc/init.d/vnt restart ")
+end
+
 token = s:taboption("general", Value, "token", translate("Token"),
 	translate("这是必填项！一个虚拟局域网的标识，连接同一服务器时，使用相同token的客户端设备才会组成一个局域网（这是 -k 参数）"))
 token.optional = false
@@ -385,6 +394,15 @@ s:tab("pri", translate("高级设置"))
 
 switch = s:taboption("gen", Flag, "enabled", translate("Enable"))
 switch.rmempty = false
+
+btnscq = s:taboption("gen", Button, "btncqs", translate("重启"))
+btnscq.inputtitle = translate("重启")
+btnscq.description = translate("在没有修改参数的情况下快速重新启动一次")
+btnscq.inputstyle = "apply"
+btnscq:depends("enabled", "1")
+btnscq.write = function()
+  os.execute("/etc/init.d/vnt restart ")
+end
 
 server_port = s:taboption("gen",Value, "server_port", translate("本地监听端口"))
 server_port.datatype = "port"
