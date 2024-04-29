@@ -405,6 +405,34 @@ start_vnts() {
                 [ "$sfinger" = "0" ] || procd_append_param command --finger
                 [ "$logs" = "1" ] || procd_append_param command --log-path /dev/null
                 if [ "$web" = "1" ] ; then
+                  if [ ! -f "${log_path}/log4rs.yaml" ] ; then
+mkdir -p ${log_path}
+cat > "${log_path}/log4rs.yaml"<<EOF
+refresh_rate: 30 seconds
+appenders:
+  rolling_file:
+    kind: rolling_file
+    path: /tmp/vnts.log
+    append: true
+    encoder:
+      pattern: "{d(%Y-%m-%d %H:%M:%S vnt:)} [{f}:{L}] {h({l})} {M}:{m}{n}"
+    policy:
+      kind: compound
+      trigger:
+        kind: size
+        limit: 1 mb
+      roller:
+        kind: fixed_window
+        pattern: /tmp/vnts.{}.log
+        base: 1
+        count: 2
+
+root:
+  level: info
+  appenders:
+    - rolling_file
+EOF
+                   fi
 		  [ -f "${web_path}/index.html" ] && [ ! -L /static ] && ln -sf $web_path /static
                   [ -z "$web_port" ] || procd_append_param command --web-port "$web_port"
 		  [ -z "$webuser" ] || procd_append_param command --username "$webuser"
