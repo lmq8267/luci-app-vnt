@@ -8,10 +8,10 @@ function index()
                   
         entry({"admin", "vpn", "vnt"}, alias("admin", "vpn", "vnt", "vnt"),_("VNT"), 44).dependent = true
 	entry({"admin", "vpn", "vnt", "vnt"}, cbi("vnt"),_("VNT"), 45).leaf = true
-	entry({"admin", "vpn",  "vnt",  "log"}, form("log"),_("客户端日志"), 46).leaf = true
+	entry({"admin", "vpn",  "vnt",  "vnt_log"}, form("vnt_log"),_("客户端日志"), 46).leaf = true
 	entry({"admin", "vpn", "vnt", "get_log"}, call("get_log")).leaf = true
 	entry({"admin", "vpn", "vnt", "clear_log"}, call("clear_log")).leaf = true
-	entry({"admin", "vpn", "vnt", "log2"}, form("log2"),_("服务端日志"), 47).leaf = true
+	entry({"admin", "vpn", "vnt", "vnt_log2"}, form("vnt_log2"),_("服务端日志"), 47).leaf = true
 	entry({"admin", "vpn", "vnt", "get_log2"}, call("get_log2")).leaf = true
 	entry({"admin", "vpn", "vnt", "clear_log2"}, call("clear_log2")).leaf = true
 	entry({"admin", "vpn", "vnt", "status"}, call("act_status")).leaf = true
