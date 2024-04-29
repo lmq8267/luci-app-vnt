@@ -89,7 +89,7 @@ end
 
 function get_log()
     local log = ""
-    local files = {"/log/vnt-cli.log"}
+    local files = {"/tmp/vnt-cli.log"}
     for i, file in ipairs(files) do
         if luci.sys.call("[ -f '" .. file .. "' ]") == 0 then
             log = log .. luci.sys.exec("cat " .. file)
@@ -99,12 +99,12 @@ function get_log()
 end
 
 function clear_log()
-	luci.sys.call("rm -rf /log/vnt-cli*.log")
+	luci.sys.call("rm -rf /tmp/vnt-cli*.log")
 end
 
 function get_log2()
 	local log2 = ""
-    local files = {"/log/vnts.log"}
+    local files = {"/tmp/vnts.log"}
     for i, file in ipairs(files) do
         if luci.sys.call("[ -f '" .. file .. "' ]") == 0 then
             log2 = log2 .. luci.sys.exec("cat " .. file)
@@ -114,12 +114,10 @@ function get_log2()
 end
 
 function clear_log2()
-	luci.sys.call("rm -rf /log/vnts*.log")
+	luci.sys.call("rm -rf /tmp/vnts*.log")
 end
 
 function vnt_info()
-  os.execute("mkdir -p /root/.vnt-cli")
-  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
   os.execute("rm -rf /tmp/vnt-cli_info")
   local info = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --info 2>&1")
   info = info:gsub("Connection status", "连接状态")
@@ -136,8 +134,6 @@ function vnt_info()
 end
 
 function vnt_all()
-  os.execute("mkdir -p /root/.vnt-cli")
-  os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
   os.execute("rm -rf /tmp/vnt-cli_all")
   local all = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --all 2>&1")
   all = all:gsub("Virtual Ip", "虚拟IP")
@@ -171,8 +167,6 @@ html_all = html_table .. "</table>"
 end
 
 function vnt_route()
- os.execute("mkdir -p /root/.vnt-cli")
- os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
  os.execute("rm -rf /tmp/vnt-cli_route")
   local route = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --route 2>&1")
   route = route:gsub("Next Hop", "下一跳地址")
@@ -204,8 +198,6 @@ html_route = html_table .. "</table>"
 end
 
 function vnt_list()
- os.execute("mkdir -p /root/.vnt-cli")
- os.execute("[ $(cat /root/.vnt-cli/command-port) != $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') ] && echo -n $(netstat -anp | grep vnt-cli | grep 127.0.0.1 | awk -F ':' '{print \$2}' | awk '{print \$1}' | tr -d ' \n') >/root/.vnt-cli/command-port")
  os.execute("rm -rf /tmp/vnt-cli_list")
   local list = luci.sys.exec("$(uci -q get vnt.@vnt-cli[0].clibin) --list 2>&1")
   list = list:gsub("Virtual Ip", "虚拟IP")
