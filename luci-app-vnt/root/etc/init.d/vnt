@@ -54,9 +54,10 @@ start_vntcli() {
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		local token mode ipaddr mtu desvice_id localadd log
 		local peeradd desvice_name vntshost stunhost checkip
-		local punch client_port par key forward serverw 
+		local punch client_port par key forward serverw vntdns
 		local finger relay first_latency tunname tunmode tcp passmode
 		config_get token "$cfg" 'token'
+                config_get vntdns "$cfg" 'vntdns'
                 config_get desvice_id "$cfg" 'desvice_id'
                 config_get desvice_name "$cfg" 'desvice_name'
                 config_get vntshost "$cfg" 'vntshost'
@@ -161,8 +162,8 @@ root:
 EOF
            fi
         [ ! -L /log4rs.yaml ] && rm -rf /log4rs.yaml && ln -sf /tmp/log4rs.yaml /log4rs.yaml
-        [ ! -L /tmp/vnt_logs/vnt-cli.0.log ] && ln -sf /tmp/vnt_logs/vnt-cli.log /tmp/vnt_logs/vnt-cli.0.log
-        [ ! -L /tmp/vnt_logs/vnt-cli.1.log ] && ln -sf /tmp/vnt_logs/vnt-cli.log /tmp/vnt_logs/vnt-cli.1.log
+        [ ! -L /tmp/vnt-cli.0.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt_logs/vnt-cli.0.log
+        [ ! -L /tmp/vnt-cli.1.log ] && ln -sf /tmp/vnt-cli.log /tmp/vnt_logs/vnt-cli.1.log
       else
       rm -rf /tmp/log4rs.yaml
           fi
@@ -191,6 +192,16 @@ EOF
                  else
                    for localaddr in $(cat /etc/config/vnt | grep 'list localadd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
                    procd_append_param command -o "$localaddr"
+                   done
+                   fi
+                fi
+
+                if [ ! -z "$vntdns" ] ; then
+                  if [[ "$(grep "list vntdns" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                    procd_append_param command --dns "$vntdns"
+                  else
+                    for vntdnss in $(cat /etc/config/vnt | grep 'list vntdns'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                    procd_append_param command --dns "$vntdnss"
                    done
                    fi
                 fi
@@ -300,8 +311,6 @@ start_vnts() {
                 if [ -z "$vntsbin" ] ;then
                    vntsbin=/tmp/vnts
                 fi
-                path=$(dirname "$vntsbin")
-                web_path="${path}/static"
                 if [ -f /tmp/vnts ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnts
                    echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 找到上传的程序/tmp/vnts，替换为$vntsbin " >>/log/vnts.log
@@ -319,25 +328,29 @@ start_vnts() {
                     uci commit
                     vntsbin=/tmp/vnts
                 fi
+                path=$(dirname "$vntsbin")
+                web_path="${path}/static"
+                key_path="${path}/key"
+                log_path="${path}/log"
 		if [ $(($($vntsbin -h | wc -l))) -lt 3 ] || [ ! -f "$vntsbin" ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.9.1版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : ${vntsbin} 不存在，开始在线下载1.2.9.6版本，下载较慢耐心等候，如需最新版请前去官方下载手动上传或修改此脚本" >>/log/vnts.log
                 mkdir -p "$path"
                 proxy_url="https://hub.gitmirror.com/"
                 proxy_url2="http://gh.ddlc.top/"
 		case "${cpucore}" in 
-	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-mipsel-unknown-linux-musl-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-mipsel-unknown-linux-musl-1.2.9.1.tar.gz"
+	           "mipsle")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-mipsel-unknown-linux-musl-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-mipsel-unknown-linux-musl-1.2.9.6.tar.gz"
 	           ;;
-	           "mips")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-mips-unknown-linux-musl-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-mips-unknown-linux-musl-1.2.9.1.tar.gz"
+	           "mips")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-mips-unknown-linux-musl-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-mips-unknown-linux-musl-1.2.9.6.tar.gz"
 	           ;;
-	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-x86_64-unknown-linux-gnu-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-x86_64-unknown-linux-gnu-1.2.9.1.tar.gz"
+	           "x86_64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-x86_64-unknown-linux-gnu-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-x86_64-unknown-linux-gnu-1.2.9.6.tar.gz"
 	           ;;
-	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-i686-unknown-linux-musl-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-i686-unknown-linux-musl-1.2.9.1.tar.gz"
+	           "i386")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-i686-unknown-linux-musl-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-i686-unknown-linux-musl-1.2.9.6.tar.gz"
 	           ;;
-	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-arm-unknown-linux-musleabihf-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-arm-unknown-linux-musleabihf-1.2.9.1.tar.gz"
+	           "arm")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-arm-unknown-linux-musleabi-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-arm-unknown-linux-musleabi-1.2.9.6.tar.gz"
 	           ;;
-	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-armv7-unknown-linux-musleabihf-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-armv7-unknown-linux-musleabihf-1.2.9.1.tar.gz"
+	           "armv7")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-armv7-unknown-linux-musleabi-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-armv7-unknown-linux-musleabi-1.2.9.6.tar.gz"
 	           ;;
-	           "aarch64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-aarch64-unknown-linux-musl-1.2.9.1.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.1/vnts-aarch64-unknown-linux-musl-1.2.9.1.tar.gz"
+	           "aarch64")  curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-aarch64-unknown-linux-musl-1.2.9.6.tar.gz" || curl -L -k -o /tmp/vnts.tar.gz --connect-timeout 10 --retry 3 "${proxy_url2}https://github.com/lbl8603/vnts/releases/download/1.2.9.6/vnts-aarch64-unknown-linux-musl-1.2.9.6.tar.gz"
 	           ;;
                    esac
                    tar zxf /tmp/vnts.tar.gz -C /tmp/
@@ -390,6 +403,7 @@ start_vnts() {
 		[ -z "$subnet" ] || procd_append_param command --gateway "$subnet"
 		[ -z "$servern_netmask" ] || procd_append_param command --netmask "$servern_netmask"
                 [ "$sfinger" = "0" ] || procd_append_param command --finger
+                [ "$logs" = "1" ] || procd_append_param command --log-path /dev/null
                 if [ "$web" = "1" ] ; then
 		  [ -f "${web_path}/index.html" ] && [ ! -L /static ] && ln -sf $web_path /static
                   [ -z "$web_port" ] || procd_append_param command --web-port "$web_port"
@@ -415,15 +429,14 @@ start_vnts() {
                    iptables -I INPUT -p tcp --dport $web_port -j ACCEPT -m comment --comment 'vnt vnts'
                    ip6tables -I INPUT -p tcp --dport $web_port -j ACCEPT -m comment --comment 'vnt vnts'
 		fi
-	        [ "$(uci -q get vnt.@vnts[0].logs)" = "0" ] && rm -rf /log/vnts*.log /log/log4rs.yaml
+	        [ "$(uci -q get vnt.@vnts[0].logs)" = "0" ] && rm -rf /tmp/vnts*.log 
 	      if [ "$logs" = "1" ] ;then
-	       sed -i 's|limit: 10 mb|limit: 1 mb|g' /log/log4rs.yaml
-	       sed -i 's|count: 5|count: 2|g' /log/log4rs.yaml
-               [ ! -L /tmp/vnt_logs/vnts.0.log ] && ln -sf /tmp/vnt_logs/vnts.log /tmp/vnt_logs/vnts.0.log
-               [ ! -L /tmp/vnt_logs/vnts.1.log ] && ln -sf /tmp/vnt_logs/vnts.log /tmp/vnt_logs/vnts.1.log
-	      else
-	       rm -rf /log/log4rs.yaml
+	       sed -i 's|limit: 10 mb|limit: 1 mb|g' ${log_path}/log4rs.yaml
+	       sed -i 's|count: 5|count: 2|g' ${log_path}/log4rs.yaml
+               [ ! -L /tmp/vnts.0.log ] && ln -sf /tmp/vnts.log /tmp/vnts.0.log
+               [ ! -L /tmp/vnts.1.log ] && ln -sf /tmp/vnts.log /tmp/vnts.1.log
 	      fi
+              [ ! -L /tmp/key ] && ln -sf $key_path /tmp/key
               echo `date +%s` > /tmp/vnts_time
 }
 
@@ -456,7 +469,7 @@ stop_cli() {
                     ip6tables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
 	        fi
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
-                rm -rf /log/vnt-cli*.log
+                rm -rf /tmp/vnt-cli.log /tmp/vnt-cli*.log
                 rm -rf /tmp/vntnew.tag /tmp/vnt.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnt-cli.log
 }
@@ -474,9 +487,9 @@ stop_vnts() {
 		[ -z "$web_port" ] && web_port=29870
                 iptables -D INPUT -p tcp --dport "$web_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
 		ip6tables -D INPUT -p tcp --dport "$web_port" -j ACCEPT -m comment --comment 'vnt vnts' 2>"/dev/null"
-                rm -rf /log/vnts*.log
+                rm -rf /tmp/vnts.log /tmp/vnts*.log
                 rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
-                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/log/vnts.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/tmp/vnts.log
 }
 
 start_service() {
@@ -491,14 +504,6 @@ start_service() {
            mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
            [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
         fi
-        
-        if [ ! -L /log ] || [ ! -d /log ]  ; then
-          [ -d /log ] && rm -rf /log
-          mkdir -p /tmp/vnt_logs
-          ln -sf /tmp/vnt_logs /log
-        fi
-        [ ! -d /root/.vnt-cli ] && mkdir -p /root/.vnt-cli
-        [ ! -L /.vnt-cli ] && rm -rf /.vnt-cli && ln -sf /root/.vnt-cli /.vnt-cli
 	config_foreach start_vntcli 'vnt-cli'
 	config_foreach start_vnts 'vnts'
 }
