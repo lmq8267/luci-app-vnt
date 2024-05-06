@@ -462,8 +462,10 @@ EOF
 	       sed -i 's|limit: 10 mb|limit: 1 mb|g' ${log_path}/log4rs.yaml
 	       sed -i 's|count: 5|count: 2|g' ${log_path}/log4rs.yaml
 	       logyaml=$(cat ${log_path}/log4rs.yaml |grep path: | awk -F'path: ' '{print $2}')
+               logyaml2=$(cat ${log_path}/log4rs.yaml | grep pattern: | awk -F'pattern: ' '{print $2}')
                if [ "$logyaml" != "/tmp/vnts.log" ] ; then
                   sed -i "s|${logyaml}|/tmp/vnts.log|g" ${log_path}/log4rs.yaml
+                  sed -i "s|${logyaml2}|/tmp/vnts.{}.log|g" ${log_path}/log4rs.yaml
                fi
                [ ! -L /tmp/vnts.0.log ] && ln -sf /tmp/vnts.log /tmp/vnts.0.log
                [ ! -L /tmp/vnts.1.log ] && ln -sf /tmp/vnts.log /tmp/vnts.1.log
