@@ -372,9 +372,6 @@ http.setfilehandler(
                if nixio.fs.access("/tmp/vnts") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/vnts上传成功，重启一次服务端才生效")
                 end
-	       if nixio.fs.access("/tmp/static/index.html") then
-                    um.value = um.value .. "\n" .. translate("-WEB界面/tmp/static上传成功，重启一次服务端才生效")
-                end
                end
                 os.execute("chmod 777 /tmp/vnts")
                 os.execute("chmod 777 /tmp/vnt-cli")                
@@ -441,6 +438,11 @@ webpass = s:taboption("gen", Value, "webpass", translate("密码"),
 webpass.placeholder = "admin"
 webpass:depends("web", "1")
 webpass.password = true
+
+web_wan = s:taboption("gen",Flag, "web_wan", translate("允许外网访问WEB管理"),
+	translate("启用后外网可访问WEB管理界面，开启后账号和密码务必设置复杂一些，定期更换，防止泄露"))
+web_wan.rmempty = false
+web_wan:depends("web", "1")
 
 logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
 	translate("运行日志在/tmp/vnts.log，可在上方服务端日志查看"))
