@@ -368,15 +368,16 @@ start_vnts() {
                chmod +x "$vntsbin"
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		local server_port white_Token subnet servern_netmask logs sfinger web_port webuser webpass web
+		local server_port white_Token subnet servern_netmask logs sfinger web_port webuser webpass web web_wan
 		config_get server_port "$cfg" 'server_port'
 		config_get white_Token "$cfg" 'white_Token'
 		config_get subnet "$cfg" 'subnet'
 		config_get servern_netmask "$cfg" 'servern_netmask'
-		config_get web_port "$cfg" 'web_port'
+		config_get web_port "$cfg" 'web_port' 
 		config_get webuser "$cfg" 'webuser'
 		config_get webpass "$cfg" 'webpass'
 		config_get_bool web "$cfg" 'web' '0'
+                config_get_bool web_wan "$web_wan" 'web_wan' '0'
                 config_get_bool logs "$cfg" 'logs' '0'
                 config_get_bool sfinger "$cfg" 'sfinger' '0'
 
@@ -445,7 +446,7 @@ EOF
                 iptables -I INPUT -p tcp --dport $server_port -j ACCEPT 
                 ip6tables -I INPUT -p udp --dport $server_port -j ACCEPT
                 ip6tables -I INPUT -p tcp --dport $server_port -j ACCEPT 
-                if [ "$web" = "1" ] ; then
+                if [ "$web" = "1" ] && [ "$web_wan" = "1" ] ; then
                    iptables -I INPUT -p tcp --dport $web_port -j ACCEPT 
                    ip6tables -I INPUT -p tcp --dport $web_port -j ACCEPT 
 		fi
@@ -503,9 +504,10 @@ stop_cli() {
 }
 stop_vnts() {
 	        local cfg="$1"
-		local server_port web_port
+		local server_port web_port web_wan
 		config_get server_port "$cfg" 'server_port'
                 config_get web_port "$cfg" 'web_port'
+                config_get_bool web_wan "$web_wan" 'web_wan' '0'
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
 		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT 2>"/dev/null"
@@ -513,8 +515,10 @@ stop_vnts() {
                 ip6tables -D INPUT -p udp --dport "$server_port" -j ACCEPT 2>"/dev/null"
                 ip6tables -D INPUT -p tcp --dport "$server_port" -j ACCEPT 2>"/dev/null"
 		[ -z "$web_port" ] && web_port=29870
-                iptables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
-		ip6tables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
+                if [ "$web_wan" = "1" ] ; then 
+                  iptables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
+		  ip6tables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
+                fi
                 rm -rf /tmp/vnts.log /tmp/vnts*.log
                 rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/tmp/vnts.log
