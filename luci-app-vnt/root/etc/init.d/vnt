@@ -273,8 +273,9 @@ EOF
 				uci set firewall.vntzone='zone'
 				uci set firewall.vntzone.input='ACCEPT'
 				uci set firewall.vntzone.output='ACCEPT'
-				uci set firewall.vntzone.forward='REJECT'
+				uci set firewall.vntzone.forward='ACCEPT'
 				uci set firewall.vntzone.masq='1'
+                                uci set firewall.vntzone.mtu_fix='1'
 				uci set firewall.vntzone.name='VNT'
 				uci set firewall.vntzone.network='VNT'
 		fi
