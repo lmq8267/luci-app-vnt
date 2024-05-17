@@ -30,10 +30,7 @@ chmod +x /etc/init.d/vnt
 if [ -f /tmp/vnt_backup ] ; then
   echo "发现vnt备份配置文件/tmp/vnt_backup，开始恢复到/etc/config/vnt"
   mv -f /tmp/vnt_backup /etc/config/vnt
-  if [ "$(uci -q get vnt.@vnt-cli[0].enabled)" = "1" ] || [ "$(uci -q get vnt.@vnts[0].enabled)" = "1" ] ; then
-     echo "开始启动vnt..."
-     /etc/init.d/vnt restart &
-  fi
+  echo "请前往 VPN - VNT 界面进行重启插件"
 fi
 endef
 
