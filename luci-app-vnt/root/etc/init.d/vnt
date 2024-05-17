@@ -248,13 +248,50 @@ EOF
 	           else
                       vnt_tcp_port="$client_port"
                     fi
-	            iptables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
-                    ip6tables -I INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT
+	            uci -q delete firewall.vntcli
+		    uci set firewall.vntcli=rule
+		    uci set firewall.vntcli.name="vntcli"
+		    uci set firewall.vntcli.target="ACCEPT"
+		    uci set firewall.vntcli.src="wan"
+		    uci set firewall.vntcli.proto="tcp"
+		    uci set firewall.vntcli.dest_port="$vnt_tcp_port"
+		    uci set firewall.vntcli.enabled="1"
 	        fi
-		iptables -t nat -I POSTROUTING -o $vnt_tun -j MASQUERADE
-		iptables -I FORWARD -o $vnt_tun -j ACCEPT
-                iptables -I FORWARD -i $vnt_tun -j ACCEPT
-                iptables -I INPUT -i $vnt_tun -j ACCEPT
+		vnt_ip="$($clibin --info | awk -F 'Virtual ip:' {'print $2'} | tr -d ' \n')"
+                if [ -z "$(uci -q get network.VNT)" ];  then				
+			uci set network.VNT='interface'
+			if [ -z "$vnt_ip" ]; then
+				uci set network.VNT.proto='none'
+			else
+				uci set network.VNT.proto='static'
+				uci set network.VNT.ipaddr=$vnt_ip
+				uci set network.VNT.netmask='255.0.0.0'
+			fi
+                        uci set network.VNT.device=$vnt_tun
+		fi
+                if [ -z "$(uci -q get firewall.vntzone)" ];  then
+				uci set firewall.vntzone='zone'
+				uci set firewall.vntzone.input='ACCEPT'
+				uci set firewall.vntzone.output='ACCEPT'
+				uci set firewall.vntzone.forward='REJECT'
+				uci set firewall.vntzone.masq='1'
+				uci set firewall.vntzone.name='VNT'
+				uci set firewall.vntzone.network='VNT'
+		fi
+                uci set firewall.vntfwlan=forwarding
+		uci set firewall.vntfwlan.dest='lan'
+		uci set firewall.vntfwlan.src='VNT'
+                uci set firewall.vntfwwan=forwarding
+		uci set firewall.vntfwwan.dest='wan'
+		uci set firewall.vntfwwan.src='VNT'
+                uci set firewall.lanfwvnt=forwarding
+		uci set firewall.lanfwvnt.dest='VNT'
+		uci set firewall.lanfwvnt.src='lan'
+                uci set firewall.wanfwvnt=forwarding
+		uci set firewall.wanfwvnt.dest='VNT'
+		uci set firewall.wanfwvnt.src='wan'
+                [ -n "$(uci changes network)" ] && uci commit network && /etc/init.d/network reload >/dev/null 2>&1
+		[ -n "$(uci changes firewall)" ] && uci commit firewall && /etc/init.d/firewall reload >/dev/null 2>&1
 		[ "$forward" = "0" ] || sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1
                 [ ! -z "$checkip" ] && check
                 echo `date +%s` > /tmp/vnt_time
@@ -441,15 +478,26 @@ EOF
 		procd_set_param stderr 1
 		procd_set_param respawn
 		procd_close_instance
-
-		iptables -I INPUT -p udp --dport $server_port -j ACCEPT
-                iptables -I INPUT -p tcp --dport $server_port -j ACCEPT 
-                ip6tables -I INPUT -p udp --dport $server_port -j ACCEPT
-                ip6tables -I INPUT -p tcp --dport $server_port -j ACCEPT 
+ 
+                uci -q delete firewall.vnts
+		uci set firewall.vnts=rule
+		uci set firewall.vnts.name="vnts"
+		uci set firewall.vnts.target="ACCEPT"
+		uci set firewall.vnts.src="wan"
+		uci set firewall.vnts.proto="tcp udp icmp igmp"
+		uci set firewall.vnts.dest_port="$server_port"
+		uci set firewall.vnts.enabled="1"
                 if [ "$web" = "1" ] && [ "$web_wan" = "1" ] ; then
-                   iptables -I INPUT -p tcp --dport $web_port -j ACCEPT 
-                   ip6tables -I INPUT -p tcp --dport $web_port -j ACCEPT 
+                   uci -q delete firewall.vntsweb
+		   uci set firewall.vntsweb=rule
+		   uci set firewall.vntsweb.name="vnts_web"
+		   uci set firewall.vntsweb.target="ACCEPT"
+		   uci set firewall.vntsweb.src="wan"
+		   uci set firewall.vntsweb.proto="tcp"
+		   uci set firewall.vntsweb.dest_port="$web_port"
+		   uci set firewall.vntsweb.enabled="1"
 		fi
+              [ -n "$(uci changes firewall)" ] && uci commit firewall && /etc/init.d/firewall reload >/dev/null 2>&1
 	        [ "$(uci -q get vnt.@vnts[0].logs)" = "0" ] && rm -rf /tmp/vnts*.log 
 	      if [ "$logs" = "1" ] ;then
 	       sed -i 's|limit: 10 mb|limit: 1 mb|g' ${log_path}/log4rs.yaml
@@ -471,32 +519,18 @@ EOF
 
 stop_cli() {
                 local cfg="$1"
-		local tunname tunmode client_port
-                config_get client_port "$cfg" 'client_port'
-		config_get tunname "$cfg" 'tunname'
-                config_get tunmode "$cfg" 'tunmode'
-                if [ ! -z "$tunname" ] ; then
-                   vnt_tun="$tunname"
-                else
-                   [ "$tunmode" = "tun" ] && vnt_tun="vnt-tun"
-                   [ "$tunmode" = "tap" ] && vnt_tun="vnt-tap"
-                fi
                 pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-                iptables -t nat -D POSTROUTING -o $vnt_tun -j MASQUERADE 2>"/dev/null"
-		iptables -D FORWARD -o $vnt_tun -j ACCEPT 2>"/dev/null"
-                iptables -D FORWARD -i $vnt_tun -j ACCEPT 2>"/dev/null"
-                iptables -D INPUT -i $vnt_tun -j ACCEPT 2>"/dev/null"
-                if [ ! -z "$client_port" ] && [ "$tcp" = "tcp" ] ; then
-                   if [ ! -z "$(echo $client_port | grep ',' )" ] ; then
-	              vnt_tcp_port="${client_port%%,*}"
-	           else
-                      vnt_tcp_port="$client_port"
-                    fi
-	            iptables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
-                    ip6tables -D INPUT -p tcp --dport $vnt_tcp_port -j ACCEPT 2>"/dev/null"
-	        fi
+                uci -q delete network.VNT
+                uci -q delete firewall.vntzone
+	        uci -q delete firewall.vntfwlan
+	        uci -q delete firewall.vntfwwan
+	        uci -q delete firewall.lanfwvnt
+	        uci -q delete firewall.wanfwvnt
+                uci -q delete firewall.vntcli
+                [ -n "$(uci changes network)" ] && uci commit network && /etc/init.d/network reload >/dev/null 2>&1
+	        [ -n "$(uci changes firewall)" ] && uci commit firewall && /etc/init.d/firewall reload >/dev/null 2>&1
                 rm -rf /tmp/vnt-cli_info /tmp/vnt-cli_all /tmp/vnt-cli_list /tmp/vnt-cli_route
                 rm -rf /tmp/vnt-cli.log /tmp/vnt-cli*.log
                 rm -rf /tmp/vntnew.tag /tmp/vnt.tag
@@ -504,21 +538,10 @@ stop_cli() {
 }
 stop_vnts() {
 	        local cfg="$1"
-		local server_port web_port web_wan
-		config_get server_port "$cfg" 'server_port'
-                config_get web_port "$cfg" 'web_port'
-                config_get_bool web_wan "$web_wan" 'web_wan' '0'
-                ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnts' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		iptables -D INPUT -p udp --dport "$server_port" -j ACCEPT 2>"/dev/null"
-                iptables -D INPUT -p tcp --dport "$server_port" -j ACCEPT 2>"/dev/null"
-                ip6tables -D INPUT -p udp --dport "$server_port" -j ACCEPT 2>"/dev/null"
-                ip6tables -D INPUT -p tcp --dport "$server_port" -j ACCEPT 2>"/dev/null"
-		[ -z "$web_port" ] && web_port=29870
-                if [ "$web_wan" = "1" ] ; then 
-                  iptables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
-		  ip6tables -D INPUT -p tcp --dport "$web_port" -j ACCEPT 2>"/dev/null"
-                fi
+		uci -q delete firewall.vnts
+                uci -q delete firewall.vntsweb
+                [ -n "$(uci changes firewall)" ] && uci commit firewall && /etc/init.d/firewall reload >/dev/null 2>&1
                 rm -rf /tmp/vnts.log /tmp/vnts*.log
                 rm -rf /tmp/vntsnew.tag /tmp/vnts.tag
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 停止运行" >>/tmp/vnts.log
@@ -552,4 +575,5 @@ reload_service() {
 
 service_triggers() {
 	procd_add_reload_trigger "vnt"
+        procd_add_interface_trigger "interface.*.up" wan /etc/init.d/vnt reload
 }
