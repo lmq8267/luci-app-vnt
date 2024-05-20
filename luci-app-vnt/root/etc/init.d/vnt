@@ -180,7 +180,7 @@ EOF
                   if [[ "$(grep "list peeradd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                     procd_append_param command -i "$peeradd"
                   else
-                    for peeraddr in $(cat /etc/config/vnt | grep 'list peeradd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                    for peeraddr in $(cat /etc/config/vnt | grep 'list peeradd'  | awk -F 'list peeradd' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
                     procd_append_param command -i "$peeraddr"
                    done
                    fi
@@ -190,7 +190,7 @@ EOF
                   if [[ "$(grep "list localadd" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                      procd_append_param command -o "$localadd"
                  else
-                   for localaddr in $(cat /etc/config/vnt | grep 'list localadd'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                   for localaddr in $(cat /etc/config/vnt | grep 'list localadd'  | awk -F 'list localadd' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
                    procd_append_param command -o "$localaddr"
                    done
                    fi
@@ -200,7 +200,7 @@ EOF
                   if [[ "$(grep "list vntdns" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                     procd_append_param command --dns "$vntdns"
                   else
-                    for vntdnss in $(cat /etc/config/vnt | grep 'list vntdns'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                    for vntdnss in $(cat /etc/config/vnt | grep 'list vntdns'  | awk -F 'list vntdns' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
                     procd_append_param command --dns "$vntdnss"
                    done
                    fi
@@ -210,7 +210,7 @@ EOF
                   if [[ "$(grep "list stunhost" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                     procd_append_param command -e "$stunhost"
                   else
-                    for stunhosts in $(cat /etc/config/vnt | grep 'list stunhost'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                    for stunhosts in $(cat /etc/config/vnt | grep 'list stunhost'  | awk -F 'list stunhost' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
                     procd_append_param command -e "$stunhosts"
                    done
                    fi
@@ -427,7 +427,7 @@ start_vnts() {
                    if [[ "$(grep "list white_Token" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
                      procd_append_param command --white-token "$white_Tokenr"
                    else
-                   for white_Tokens in $(cat /etc/config/vnt | grep 'list white_Token'  | awk '{print $3}'| sed "s/'/\n/g" | tr -d " ' "); do
+                   for white_Tokens in $(cat /etc/config/vnt | grep 'list white_Token'  | awk -F 'list white_Token' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
                    procd_append_param command --white-token "$white_Tokens"
                    done
                    fi
