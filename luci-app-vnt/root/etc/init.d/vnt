@@ -436,7 +436,7 @@ start_vnts() {
 		[ -z "$servern_netmask" ] || procd_append_param command --netmask "$servern_netmask"
                 [ "$sfinger" = "0" ] || procd_append_param command --finger
                 [ "$logs" = "1" ] || procd_append_param command --log-path /dev/null
-                if [ "$web" = "1" ] ; then
+                
                   if [ ! -f "${log_path}/log4rs.yaml" ] ; then
 mkdir -p ${log_path}
 cat > "${log_path}/log4rs.yaml"<<EOF
@@ -465,12 +465,14 @@ root:
     - rolling_file
 EOF
                    fi
+                if [ "$web" = "1" ] && [ "$cpucore" != "mips" ] ; then
                   [ -z "$web_port" ] || procd_append_param command --web-port "$web_port"
 		  [ -z "$webuser" ] || procd_append_param command --username "$webuser"
 		  [ -z "$webpass" ] || procd_append_param command --password "$webpass"
 		  [ -z "$web_port" ] && web_port=29870
 		 else
-                  procd_append_param command --web-port 0
+                  [ "$cpucore" = "mips" ] && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : mips架构不支持web界面" >>/tmp/vnt-cli.log
+                  [ "$cpucore" != "mips" ] && procd_append_param command --web-port 0
 		fi
 
 		procd_set_param limits core="unlimited"
