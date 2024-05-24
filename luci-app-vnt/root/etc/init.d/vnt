@@ -514,9 +514,9 @@ EOF
                [ ! -L /tmp/vnts.0.log ] && ln -sf /tmp/vnts.log /tmp/vnts.0.log
                [ ! -L /tmp/vnts.1.log ] && ln -sf /tmp/vnts.log /tmp/vnts.1.log
 	      fi
-              mkdir -p /tmp/key
-              [ ! -L /tmp/key/public_key.pem ] && ln -sf ${key_path}/public_key.pem /tmp/key/public_key.pem
-              [ ! -L /tmp/key/private_key.pem ] && ln -sf ${key_path}/private_key.pem /tmp/key/private_key.pem
+              mkdir -p /tmp/vnts_key
+              [ ! -L /tmp/vnts_key/public_key.pem ] && ln -sf ${key_path}/public_key.pem /tmp/vnts_key/public_key.pem
+              [ ! -L /tmp/vnts_key/private_key.pem ] && ln -sf ${key_path}/private_key.pem /tmp/vnts_key/private_key.pem
               echo `date +%s` > /tmp/vnts_time
 }
 
