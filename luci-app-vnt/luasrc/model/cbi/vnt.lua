@@ -461,10 +461,10 @@ public_key = s:taboption("pri",TextValue, "public_key", translate("public公钥"
 public_key.rows = 3
 public_key.wrap = "off"
 public_key.cfgvalue = function(self, section)
-    return nixio.fs.readfile("/tmp/key/public_key.pem") or ""
+    return nixio.fs.readfile("/tmp/vnts_key/public_key.pem") or ""
 end
 public_key.write = function(self, section, value)
-    fs.writefile("/tmp/key/public_key.pem", value:gsub("\r\n", "\n"))
+    fs.writefile("/tmp/vnts_key/public_key.pem", value:gsub("\r\n", "\n"))
 end
 
 private_key = s:taboption("pri",TextValue, "private_key", translate("private私钥"),
@@ -472,10 +472,10 @@ private_key = s:taboption("pri",TextValue, "private_key", translate("private私�
 private_key.rows = 3
 private_key.wrap = "off"
 private_key.cfgvalue = function(self, section)
-    return nixio.fs.readfile("/tmp/key/private_key.pem") or ""
+    return nixio.fs.readfile("/tmp/vnts_key/private_key.pem") or ""
 end
 private_key.write = function(self, section, value)
-    fs.writefile("/tmp/key/private_key.pem", value:gsub("\r\n", "\n"))
+    fs.writefile("/tmp/vnts_key/private_key.pem", value:gsub("\r\n", "\n"))
 end
 
 local vnts_status = luci.sys.exec("ps | grep vnts | grep -v grep")
