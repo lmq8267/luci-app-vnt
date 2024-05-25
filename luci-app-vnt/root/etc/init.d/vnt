@@ -15,6 +15,7 @@ start_vntcli() {
                    clibin=/tmp/vnt-cli
                 fi
                 echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/tmp/vnt-cli.log
+                test -z "`opkg list-installed|grep kmod-tun`" && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未安装kmod-tun模块，开始安装..." >>/tmp/vnt-cli.log && opkg update && opkg install kmod-tun
                 path=$(dirname "$clibin")
                 if [ -f /tmp/vnt-cli ] && [ "${path:0:4}" != "/tmp" ] ;then
                    chmod +x /tmp/vnt-cli
