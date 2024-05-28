@@ -80,7 +80,7 @@ forward = s:taboption("general",Flag, "forward", translate("启用IP转发"),
 forward.rmempty = false
 
 log = s:taboption("general",Flag, "log", translate("启用日志"),
-	translate("运行日志在/tmp/vnt.log,可在上方客户端日志查看"))
+	translate("运行日志在/tmp/vnt.log,可在上方客户端日志查看，无法启动等详细错误日志在 状态-系统日志里查看"))
 log.rmempty = false
 
 clibin = s:taboption("privacy", Value, "clibin", translate("vnt-cli程序路径"),
@@ -100,9 +100,16 @@ stunhost = s:taboption("privacy",DynamicList, "stunhost", translate("stun服务�
 	translate("使用stun服务探测客户端NAT类型，不同类型有不同的打洞策略，最多三个，超过将被忽略<br>已内置谷歌 QQ 可不填，一些<a href='https://github.com/heiher/natmap/issues/18#issue-1580804352' target='_blank'>免费stun服务器</a>"))
 stunhost.placeholder = "stun.qq.com:3478"
 
+local model = fs.readfile("/proc/device-tree/model") or ""
+local hostname = fs.readfile("/proc/sys/kernel/hostname") or ""
+model = model:gsub("\n", "")
+hostname = hostname:gsub("\n", "")
+local device_name = (model ~= "" and model) or (hostname ~= "" and hostname) or "OpenWrt"
+device_name = device_name:gsub(" ", "_")
 desvice_name = s:taboption("privacy", Value, "desvice_name", translate("设备名称"),
-	translate("本机设备名称，方便区分不同设备"))
-desvice_name.placeholder = "openwrt"
+    translate("本机设备名称，方便区分不同设备"))
+desvice_name.placeholder = device_name
+desvice_name.default = device_name
 
 tunmode = s:taboption("privacy",ListValue, "tunmode", translate("TUN/TAP网卡"),
 	translate("默认使用tun网卡，tun网卡效率更高"))
@@ -128,6 +135,10 @@ client_port = s:taboption("privacy", Value, "client_port", translate("本地监�
 	translate("取值0~65535，指定本地监听的端口组，多个端口使用英文逗号分隔,多个端口可以分摊流量，增加并发，tcp会监听端口组的第一个端口，用于tcp直连<br>例1：‘12345,12346,12347’ 表示udp监听12345、12346、12347这三个端口，tcp监听12345端口<br>例2：‘0,0’ 表示udp监听两个未使用的端口，tcp监听一个未使用的端口"))
 client_port.placeholder = "0,0"
 
+mapping = s:taboption("privacy",DynamicList, "mapping", translate("端口映射"),
+	translate("端口映射,可以设置多个映射地址，例如 udp:0.0.0.0:80->10.26.0.10:80 和 tcp:0.0.0.0:80->10.26.0.11:81 <br>表示将本地udp 80端口的数据转发到10.26.0.10:80，将本地tcp 80端口的数据转发到10.26.0.11:81，转发的目的地址可以使用域名+端口"))
+mapping.placeholder = "tcp:0.0.0.0:80->10.26.0.10:80"
+
 mtu = s:taboption("privacy",Value, "mtu", translate("MTU"),
 	translate("设置虚拟网卡的mtu值，大多数情况下（留空）使用默认值效率会更高，也可根据实际情况进行微调，默认值：不加密1450，加密1410"))
 mtu.datatype = "range(1,1500)"
@@ -142,6 +153,12 @@ punch = s:taboption("privacy",ListValue, "punch", translate("IPV4/IPV6"),
 punch:value("ipv4/ipv6")
 punch:value("ipv4")
 punch:value("ipv6")
+
+comp = s:taboption("privacy",ListValue, "comp", translate("启用压缩"),
+	translate("启用压缩，默认仅支持lz4压缩，开启压缩后，如果数据包长度大于等于128，则会使用压缩，否则还是会按原数据发送<br>也支持zstd压缩，但是需要确认程序编译时是否添加支持zstd否则无法启动！编译参数--features zstd<br>如果宽度速度比较慢，可以考虑使用高级别的压缩"))
+comp:value("OFF")
+comp:value("lz4")
+comp:value("zstd")
 
 passmode = s:taboption("privacy",ListValue, "passmode", translate("加密模式"),
 	translate("默认off不加密，通常情况aes_gcm安全性高、aes_ecb性能更好，在低性能设备上aes_ecb速度最快"))
@@ -445,7 +462,7 @@ web_wan.rmempty = false
 web_wan:depends("web", "1")
 
 logs = s:taboption("gen",Flag, "logs", translate("启用日志"),
-	translate("运行日志在/tmp/vnts.log，可在上方服务端日志查看"))
+	translate("运行日志在/tmp/vnts.log，可在上方服务端日志查看，无法启动等详细错误日志在 状态-系统日志里查看"))
 logs.rmempty = false
 
 vntsbin = s:taboption("pri",Value, "vntsbin", translate("vnts程序路径"),
