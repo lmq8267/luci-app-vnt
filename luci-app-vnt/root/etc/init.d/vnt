@@ -14,7 +14,7 @@ start_vntcli() {
                 if [ -z "$clibin" ] ;then
                    clibin=/tmp/vnt-cli
                 fi
-                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/tmp/vnt-cli.log
+                echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : vnt-cli_${cpucore}开始启动" >>/tmp/vnt-cli.log
                 test -z "`opkg list-installed|grep kmod-tun`" && echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 未安装kmod-tun模块，开始安装..." >>/tmp/vnt-cli.log && opkg update && opkg install kmod-tun
                 path=$(dirname "$clibin")
                 if [ -f /tmp/vnt-cli ] && [ "${path:0:4}" != "/tmp" ] ;then
@@ -53,8 +53,8 @@ start_vntcli() {
                 pgrep -f vnt_check | xargs kill -9 >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill >/dev/null 2>&1
                 ps | grep 'vnt-cli' | grep -v grep | awk '{print $1}' | xargs kill -9 >/dev/null 2>&1
-		local token mode ipaddr mtu desvice_id localadd log
-		local peeradd desvice_name vntshost stunhost checkip
+		local token mode ipaddr mtu desvice_id localadd log comp
+		local peeradd desvice_name vntshost stunhost checkip mapping
 		local punch client_port par key forward serverw vntdns
 		local finger relay first_latency tunname tunmode tcp passmode
 		config_get token "$cfg" 'token'
@@ -134,6 +134,8 @@ fi
 		config_get_bool first_latency "$cfg" 'first_latency' '0'
                 config_get_bool log "$cfg" 'log' '0'
                 config_get checkip "$cfg" 'checkip'
+                config_get comp "$cfg" 'comp'
+                config_get mapping "$cfg" 'mapping'
                if [ "$log" = "1" ] ;then
                  if [ ! -f /tmp/log4rs.yaml ] ; then
                   cat > /tmp/log4rs.yaml<<EOF
@@ -216,6 +218,16 @@ EOF
                    done
                    fi
                 fi
+
+                if [ ! -z "$mapping" ] ; then
+                  if [[ "$(grep "list mapping" /etc/config/vnt | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+                    procd_append_param command --mapping "$mapping"
+                  else
+                    for mappings in $(cat /etc/config/vnt | grep 'list mapping'  | awk -F 'list mapping' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
+                    procd_append_param command -e "$mappings"
+                   done
+                   fi
+                fi
 		[ -z "$par" ] || procd_append_param command --par "$par"
 		[ -z "$tunname" ] || procd_append_param command --nic "$tunname"
 		[ "$punch" = "ipv4/ipv6" ] || procd_append_param command --punch "$punch"
@@ -229,6 +241,7 @@ EOF
 		[ "$first_latency" = "0" ] || procd_append_param command --first-latency
                 [ "$relay" = "转发" ] && procd_append_param command --use-channel relay
                 [ "$relay" = "P2P" ] && procd_append_param command --use-channel p2p
+                [ "$comp" != "OFF" ] && procd_append_param command --compressor "$comp"
 
 		procd_set_param limits core="unlimited"
 		procd_set_param limits nofile="1000000 1000000"
@@ -345,7 +358,7 @@ start_vnts() {
 		local enabled
 		config_get_bool enabled "$cfg" 'enabled' '0'
 		[ "$enabled" = "1" ] || return 1
-		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : 开始启动" >>/tmp/vnts.log
+		echo "$(date '+%Y-%m-%d %H:%M:%S') vnt : vnts_${cpucore}开始启动" >>/tmp/vnts.log
                 config_get vntsbin "$cfg" 'vntsbin'
                 if [ -z "$vntsbin" ] ;then
                    vntsbin=/tmp/vnts
@@ -563,6 +576,8 @@ start_service() {
            mipstype=$(echo -n I | hexdump -o 2>/dev/null | awk '{ print substr($2,6,1); exit}') 
            [ "$mipstype" = "0" ] && cpucore="mips" || cpucore="mipsle"
         fi
+        
+        test -z "`opkg list-installed|grep curl`" && opkg update && opkg install curl
 	config_foreach start_vntcli 'vnt-cli'
 	config_foreach start_vnts 'vnts'
 }
