@@ -167,6 +167,9 @@ passmode:value("aes_ecb")
 passmode:value("sm4_cbc")
 passmode:value("aes_cbc")
 passmode:value("aes_gcm")
+passmode:value("chacha20")
+passmode:value("chacha20_poly1305")
+passmode:value("xor")
 
 key = s:taboption("privacy",Value, "key", translate("加密密钥"),
 	translate("先开启上方的加密模式再填写密钥才能生效，使用相同密钥的客户端才能通信，服务端无法解密(包括中继转发数据)"))
