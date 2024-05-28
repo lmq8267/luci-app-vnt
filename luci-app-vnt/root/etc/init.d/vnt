@@ -224,7 +224,7 @@ EOF
                     procd_append_param command --mapping "$mapping"
                   else
                     for mappings in $(cat /etc/config/vnt | grep 'list mapping'  | awk -F 'list mapping' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
-                    procd_append_param command -e "$mappings"
+                    procd_append_param command --mapping "$mappings"
                    done
                    fi
                 fi
