@@ -578,6 +578,7 @@ start_service() {
         fi
         
         test -z "`opkg list-installed|grep curl`" && opkg update && opkg install curl
+        test -z "`opkg list-installed|grep luci-lib-fs`" && opkg update && opkg install luci-lib-fs
 	config_foreach start_vntcli 'vnt-cli'
 	config_foreach start_vnts 'vnts'
 }
