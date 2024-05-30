@@ -132,7 +132,7 @@ relay:value("转发")
 relay:value("P2P")
 
 client_port = s:taboption("privacy", Value, "client_port", translate("本地监听端口"),
-	translate("取值0~65535，指定本地监听的端口组，多个端口使用英文逗号分隔,多个端口可以分摊流量，增加并发，tcp会监听端口组的第一个端口，用于tcp直连<br>例1：‘12345,12346,12347’ 表示udp监听12345、12346、12347这三个端口，tcp监听12345端口<br>例2：‘0,0’ 表示udp监听两个未使用的端口，tcp监听一个未使用的端口"))
+	translate("取值0~65535，指定本地监听的端口组，多个端口使用英文逗号分隔,多个端口可以分摊流量，增加并发，tcp会监听端口组的第一个端口，用于tcp直连<br>例1：12345,12346,12347 表示udp监听12345、12346、12347这三个端口，tcp监听12345端口<br>例2：0,0 表示udp监听两个未使用的端口，tcp监听一个未使用的端口"))
 client_port.placeholder = "0,0"
 
 mapping = s:taboption("privacy",DynamicList, "mapping", translate("端口映射"),
@@ -161,7 +161,7 @@ comp:value("lz4")
 comp:value("zstd")
 
 passmode = s:taboption("privacy",ListValue, "passmode", translate("加密模式"),
-	translate("默认off不加密，通常情况aes_gcm安全性高、aes_ecb性能更好，在低性能设备上aes_ecb速度最快"))
+	translate("默认off不加密，通常情况aes_gcm安全性高、aes_ecb性能更好，在低性能设备上aes_ecb、chacha20、chacha20_poly1305、xor速度最快<br>注意：xor为数据混淆，并不是一种强大的加密算法，易被破解，因此不适合用于真正的加密需求"))
 passmode:value("off")
 passmode:value("aes_ecb")
 passmode:value("sm4_cbc")
