@@ -178,6 +178,9 @@ key:depends("passmode", "aes_ecb")
 key:depends("passmode", "sm4_cbc")
 key:depends("passmode", "sm4_cbc")
 key:depends("passmode", "aes_gcm")
+key:depends("passmode", "chacha20")
+key:depends("passmode", "chacha20_poly1305")
+key:depends("passmode", "xor")
 
 serverw = s:taboption("privacy",Flag, "serverw", translate("启用服务端客户端加密"),
 	translate("用服务端通信的数据加密，采用rsa+aes256gcm加密客户端和服务端之间通信的数据，可以避免token泄漏、中间人攻击，<br>上面的加密模式是客户端与客户端之间加密，这是服务器和客户端之间的加密，不是一个性质，无需选择加密模式"))
