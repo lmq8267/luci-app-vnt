@@ -282,6 +282,7 @@ EOF
 				uci set network.VNT.netmask='255.0.0.0'
 			fi
                         uci set network.VNT.device=$vnt_tun
+                        uci set network.VNT.ifname=$vnt_tun
 		fi
                 if [ -z "$(uci -q get firewall.vntzone)" ];  then
 				uci set firewall.vntzone='zone'
