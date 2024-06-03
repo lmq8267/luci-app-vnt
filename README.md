@@ -13,7 +13,7 @@
 
 非专业，编写自用，有大佬完善一下也好，自1.2.9版本起可以多开了，要是有大佬重写一个可以支持多开、多配置快速切换 就好啦，多配置快速切换
 
-需要依赖luci-lib-fs和komd-tun 手动去系统自带的软件包里先安装好吧 
+需要依赖[luci-lib-fs](https://github.com/lmq8267/luci-app-vnt/releases/download/1.0.0/luci-lib-fs_1.0-1_all.ipk)和komd-tun 手动去系统自带的软件包里先安装好吧 
 
 ### UI预览 ###
 ![](./Image/主界面23-11-07.png)
