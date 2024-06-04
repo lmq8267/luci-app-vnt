@@ -35,7 +35,7 @@ jobs:
             body: |
              > ### 编译时间 ：${{ env.build_time }}
 
-             需要先去系统自带的软件包里已经安装 _**luci**_ 和 _**luci-base**_ 和 _**luci-compat**_ 和 _**luci-lib-fs**_ 和 _**kmod-tun**_ 再安装这个ipk才能显示界面
+             需要先去系统自带的软件包里已经安装 _**luci**_ 和 _**luci-base**_ 和 _**luci-compat**_ 和 _**[luci-lib-fs](https://github.com/lmq8267/luci-app-vnt/releases/download/1.0.0/luci-lib-fs_1.0-1_all.ipk)**_ 和 _**kmod-tun**_ 再安装这个ipk才能显示界面
 
              安装完成后找不到界面入口的，请注销登录关闭当前浏览器窗口重新打开或重启路由器
              
