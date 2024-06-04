@@ -10,7 +10,7 @@ PKG_VERSION:=1.3.1
 PKG_RELEASE:=1
 
 LUCI_TITLE:=LuCI support for vnt
-LUCI_DEPENDS:=
+LUCI_DEPENDS:=+luci-lib-fs +kmod-tun
 LUCI_PKGARCH:=all
 
 PKG_NAME:=luci-app-vnt
