@@ -35,9 +35,10 @@ jobs:
             body: |
              > ### 编译时间 ：${{ env.build_time }}
 
-             需要先去系统自带的软件包里安装 luci-lib-fs 和 kmod-tun 再安装这个ipk才能显示界面
-             打开报错的请确保已经安装了 luci-base和luci-compat
+             需要先去系统自带的软件包里已经安装 _**luci**_ 和 _**luci-base**_ 和 _**luci-compat**_ 和 _**luci-lib-fs**_ 和 _**kmod-tun**_ 再安装这个ipk才能显示界面
+
              安装完成后找不到界面入口的，请注销登录关闭当前浏览器窗口重新打开或重启路由器
+             
              ![image](https://github.com/lmq8267/luci-app-vnt/assets/119713693/5094717e-a301-4411-9450-c8b64d4a3ade)
              如果 状态-系统日志里 出现上述日志可以使用以下命令解决
              `sed -i 's/util/xml/' /usr/lib/lua/luci/model/cbi/vnt.lua`
